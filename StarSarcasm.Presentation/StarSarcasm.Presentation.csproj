@@ -10,4 +10,14 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StarSarcasm.Application\StarSarcasm.Application.csproj" />
+    <ProjectReference Include="..\StarSarcasm.Domain\StarSarcasm.Domain.csproj" />
+    <ProjectReference Include="..\StarSarcasm.Infrastructure\StarSarcasm.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
