@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,8 @@ namespace StarSarcasm.Domain.Entities
 {
     public class UsersMessages
     {
+        [Key]
+        public int Id { get; set; }
         public string UserId { get; set; }
         public int MessageId { get; set; }
 
