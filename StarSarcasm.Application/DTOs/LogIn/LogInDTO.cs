@@ -15,5 +15,8 @@ namespace StarSarcasm.Application.DTOs.LogIn
         [Required(ErrorMessage = "Phone number is required.")]
         [PhoneNumberValidation(ErrorMessage = "Please enter a valid phone number with the correct country code.")]
         public string PhoneNumber { get; set; }
+
+        public string DeviceIPAddress { get; set; }
+
     }
 }

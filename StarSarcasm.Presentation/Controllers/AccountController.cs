@@ -24,7 +24,11 @@ namespace StarSarcasm.Presentation.Controllers
                 var Response = await _authService.LogInAsync(model);
                 if (Response.IsSuccess)
                 {
-                    return StatusCode(Response.StatusCode,Response.Message);
+                    return StatusCode(Response.StatusCode, new
+                    {
+                        Message = Response.Message,
+                        Token = Response.Model
+                    });
                 }
            return StatusCode(Response.StatusCode,Response.Message);
         }

@@ -10,16 +10,11 @@ using StarSarcasm.Application.Response;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.OTP;
 using StarSarcasm.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
-using Twilio.Jwt.AccessToken;
-using Twilio.Types;
+
 
 namespace StarSarcasm.Infrastructure.Services
 {
@@ -49,8 +44,10 @@ namespace StarSarcasm.Infrastructure.Services
                 {
                     UserName = model.PhoneNumber,
                     PhoneNumber = model.PhoneNumber,
-                    Name = model.Name
+                    Name = model.Name,
                 };
+                user.DeviceIpAddress = (user.DeviceIpAddress ?? Array.Empty<string>())
+                    .Append(model.DeviceIPAddress).ToArray();
 
                 var result = await _userManager.CreateAsync(user);
                 if (!result.Succeeded)
@@ -73,8 +70,26 @@ namespace StarSarcasm.Infrastructure.Services
                 }
             }
 
+            if (isUserExist!=null && isUserExist.DeviceIpAddress.Contains(model.DeviceIPAddress))
+            {
+                var token = await GenerateJwtToken(isUserExist);
+                var userRoles = await _userManager.GetRolesAsync(isUserExist);
+
+                return new ResponseModel
+                {
+                    Message = "Login Successfully",
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Model = new
+                    {
+                        Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        Roles = userRoles,
+                    }
+                };
+            }
+
             var otp = _oTPService.GenerateOTP();
-            var expirationTime = DateTime.UtcNow.AddMinutes(5);
+            var expirationTime = DateTime.UtcNow.AddMinutes(10);
 
             var otpCode = new OTP
             {
