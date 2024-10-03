@@ -113,7 +113,7 @@ namespace StarSarcasm.Infrastructure.Services
                 audience: _configuration["JWT:audience"],
                 claims: claims,
                 signingCredentials: signingCred,
-                expires: DateTime.Now.AddHours(5)
+                expires: DateTime.UtcNow.AddHours(3)
                 );
             return Token;
         }
@@ -139,6 +139,7 @@ namespace StarSarcasm.Infrastructure.Services
             }
 
             var token = await GenerateJwtToken(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
 
             user.PhoneNumberConfirmed = true;
             try
@@ -147,7 +148,7 @@ namespace StarSarcasm.Infrastructure.Services
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex) {
-                return new ResponseModel { Message = "an Expected Errore ocured", IsSuccess = false, StatusCode = 400 };
+                return new ResponseModel { Message = $"{ex.Message}", IsSuccess = false, StatusCode = 400 };
             }
 
             return new ResponseModel
@@ -157,7 +158,7 @@ namespace StarSarcasm.Infrastructure.Services
                 StatusCode = 200,
                 Model = new { 
                     Token= new JwtSecurityTokenHandler().WriteToken(token),
-                    Roles= await _userManager.GetRolesAsync(user),
+                    Roles= userRoles,
                 }
             };
         }
