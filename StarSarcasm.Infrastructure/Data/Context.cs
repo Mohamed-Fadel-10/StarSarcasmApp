@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using StarSarcasm.Domain.Entities;
+using StarSarcasm.Domain.Entities.OTP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,6 +66,6 @@ namespace StarSarcasm.Infrastructure.Data
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<UsersDraws> UsersDraws { get; set; }
         public DbSet<UsersMessages> UsersMessages { get; set; }
-
+        public DbSet<OTP> OTP { get; set; }
     }
 }

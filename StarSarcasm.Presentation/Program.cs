@@ -4,9 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StarSarcasm.Application.Interfaces;
+using StarSarcasm.Application.Interfaces.ISMSService;
+using StarSarcasm.Application.TwilioSettings;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Infrastructure.Data;
 using StarSarcasm.Infrastructure.Services;
+using StarSarcasm.Infrastructure.Services.SMSServices;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -77,11 +80,21 @@ builder.Services.AddAuthentication(option =>
 
 });
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-    .AddEntityFrameworkStores<Context>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedPhoneNumber = true;
+})
+    .AddEntityFrameworkStores<Context>()
+    .AddDefaultTokenProviders()
+    .AddSignInManager<SignInManager<ApplicationUser>>();
+
+// Configurations for sms OTP
+builder.Services.Configure<TwilioSettings>(builder.Configuration.GetSection("Twilio"));
 
 // inject services 
+builder.Services.AddTransient<IOTPService, OTPService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 
 builder.Services.AddDbContext<Context>(options =>
             options.UseSqlServer(builder.Configuration
