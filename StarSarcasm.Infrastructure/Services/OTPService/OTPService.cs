@@ -10,6 +10,7 @@ using StarSarcasm.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Twilio;
@@ -27,8 +28,10 @@ namespace StarSarcasm.Infrastructure.Services.SMSServices
         }
         public string GenerateOTP()
         {
-            var random = new Random();
-            return random.Next(100000, 999999).ToString();
+            int otp = RandomNumberGenerator.GetInt32(100000, 999999);
+
+            return otp.ToString();
+
         }
 
         public MessageResource Send(string mobileNumber, string body)
