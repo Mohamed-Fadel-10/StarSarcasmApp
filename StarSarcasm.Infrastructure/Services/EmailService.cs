@@ -3,6 +3,7 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using StarSarcasm.Application.DTOs.LogIn;
+using StarSarcasm.Application.DTOs.Register;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.Email;
@@ -24,10 +25,10 @@ namespace StarSarcasm.Infrastructure.Services
             _emailSettings = options.Value;
         }
 
-        private string OtpBodyGenerator(string name, string otp)
+        private string OtpBodyGenerator(string otp)
         {
             string body = "<div>";
-            body += "<h3>Hello " + name + ",</h3>";
+            body += "<h3>Hello,</h3>";
             body += "<h5>Please use the following OTP to verify your email address: </h5>";
             body += "<h1>" + otp + ".</h1>";
             body += "<br><h5>Have a nice day,</h5>";
@@ -36,7 +37,7 @@ namespace StarSarcasm.Infrastructure.Services
             return body;
         }
 
-        public async Task SendOtpAsync(LogInDTO user,string otp)
+        public async Task SendOtpAsync(string userEmail,string otp)
         {
             var email = new MimeMessage
             {
@@ -44,10 +45,10 @@ namespace StarSarcasm.Infrastructure.Services
                 Subject = "OTP Email Verfication"
             };
 
-            email.To.Add(MailboxAddress.Parse(user.Email));
+            email.To.Add(MailboxAddress.Parse(userEmail));
             var builder = new BodyBuilder();
 
-            builder.HtmlBody=OtpBodyGenerator(user.Name, otp);
+            builder.HtmlBody=OtpBodyGenerator(otp);
             email.Body=builder.ToMessageBody();
             email.From.Add(new MailboxAddress(_emailSettings.DisplayName, _emailSettings.Email));
 

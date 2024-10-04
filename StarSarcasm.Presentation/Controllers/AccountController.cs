@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.DTOs.LogIn;
+using StarSarcasm.Application.DTOs.Register;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Interfaces.ISMSService;
 
@@ -18,7 +20,24 @@ namespace StarSarcasm.Presentation.Controllers
             this._oTPService = _oTPService; 
 
         }
-        [HttpPost]
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterDTO dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await _authService.RegisterAsync(dto);
+                if (response.IsSuccess)
+                {
+                    return StatusCode(response.StatusCode, response.Message);
+                }
+                return BadRequest(response.Message);
+            }
+            return BadRequest(ModelState);
+
+        }
+
+        [HttpPost("login")]
         public async Task<IActionResult> LogIn(LogInDTO model)
         { 
                 var Response = await _authService.LogInAsync(model);
@@ -29,7 +48,37 @@ namespace StarSarcasm.Presentation.Controllers
            return StatusCode(Response.StatusCode,Response.Message);
         }
 
-        [HttpPost("VerifyOTP")]
+        [HttpPost("forgetpassword")]
+        public async Task<IActionResult> ForgetPassword(string email)
+        {
+            if (ModelState.IsValid)
+            {
+                var response=await _authService.ForgetPassword(email);
+                if (response.IsSuccess)
+                {
+                    return StatusCode(response.StatusCode, response.Message);
+                }
+                return BadRequest(response.Message);
+            }
+            return BadRequest(ModelState);
+        }
+
+        [HttpPost("changepassword")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDTO dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await _authService.ChangePassword(dto);
+                if (response.IsSuccess)
+                {
+                    return StatusCode(response.StatusCode, response.Message);
+                }
+                return BadRequest(response.Message);
+            }
+            return BadRequest(ModelState);
+        }
+
+        [HttpPost("verifyOtp")]
         public async Task<IActionResult> VerifyOTP(string email, string otpCode)
         {
             var Response = await _authService.VerifyOTP(email, otpCode);

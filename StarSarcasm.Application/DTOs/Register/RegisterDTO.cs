@@ -11,6 +11,17 @@ namespace StarSarcasm.Application.DTOs.Register
     {
         [Required(ErrorMessage = "User Name is required")]
         public string Name { get; set; }
-        public string Phone { get; set; }
+
+        [Required(ErrorMessage = "Email is required!")]
+        [EmailAddress(ErrorMessage = "Please,enter a valid email!")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required!")]
+        [DataType(DataType.Password,ErrorMessage =
+            "Password must contain uppercase and lowercase letters, numbers and special characters.")]
+        public string Password { get; set; }
+
+        [Compare("Password",ErrorMessage ="Not Matched!")]
+        public string ConfirmPassword { get; set; }
     }
 }
