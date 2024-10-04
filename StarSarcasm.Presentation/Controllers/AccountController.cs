@@ -24,19 +24,15 @@ namespace StarSarcasm.Presentation.Controllers
                 var Response = await _authService.LogInAsync(model);
                 if (Response.IsSuccess)
                 {
-                    return StatusCode(Response.StatusCode, new
-                    {
-                        Message = Response.Message,
-                        Token = Response.Model
-                    });
+                    return StatusCode(Response.StatusCode, Response.Model);
                 }
            return StatusCode(Response.StatusCode,Response.Message);
         }
 
         [HttpPost("VerifyOTP")]
-        public async Task<IActionResult> VerifyOTP(string phoneNumber, string otpCode)
+        public async Task<IActionResult> VerifyOTP(string email, string otpCode)
         {
-            var Response = await _authService.VerifyOTP(phoneNumber, otpCode);
+            var Response = await _authService.VerifyOTP(email, otpCode);
             if (Response.IsSuccess)
             {
                 return StatusCode(Response.StatusCode, new

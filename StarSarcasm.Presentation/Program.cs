@@ -5,8 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Interfaces.ISMSService;
-using StarSarcasm.Application.TwilioSettings;
 using StarSarcasm.Domain.Entities;
+using StarSarcasm.Domain.Entities.Email;
 using StarSarcasm.Infrastructure.Data;
 using StarSarcasm.Infrastructure.Services;
 using StarSarcasm.Infrastructure.Services.SMSServices;
@@ -88,12 +88,13 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders()
     .AddSignInManager<SignInManager<ApplicationUser>>();
 
-// Configurations for sms OTP
-builder.Services.Configure<TwilioSettings>(builder.Configuration.GetSection("Twilio"));
+// Email Configuration
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // inject services 
 builder.Services.AddTransient<IOTPService, OTPService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 builder.Services.AddDbContext<Context>(options =>

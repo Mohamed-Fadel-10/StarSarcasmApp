@@ -25,26 +25,29 @@ namespace StarSarcasm.Infrastructure.Services
         private readonly IOTPService _oTPService;
         private readonly Context _context;
         private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
+
         public AuthService(UserManager<ApplicationUser> _userManager, RoleManager<IdentityRole> _roleManager, IOTPService _oTPService,
-            Context _context, IConfiguration _configuration)
+            Context _context, IConfiguration _configuration, IEmailService emailService)
         {
-            this._userManager= _userManager;
-            this._roleManager= _roleManager;
-            this._oTPService= _oTPService;
-            this._context= _context;
-            this._configuration= _configuration;
+            this._userManager = _userManager;
+            this._roleManager = _roleManager;
+            this._oTPService = _oTPService;
+            this._context = _context;
+            this._configuration = _configuration;
+            _emailService = emailService;
         }
         public async Task<ResponseModel> LogInAsync(LogInDTO model)
         {
-            var isUserExist = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            var isUserExist = await _userManager.FindByEmailAsync(model.Email);
 
             if (isUserExist == null)
             {
                 var user = new ApplicationUser
                 {
-                    UserName = model.PhoneNumber,
-                    PhoneNumber = model.PhoneNumber,
+                    UserName = model.Name,
                     Name = model.Name,
+                    Email = model.Email,
                 };
                 user.DeviceIpAddress = (user.DeviceIpAddress ?? Array.Empty<string>())
                     .Append(model.DeviceIPAddress).ToArray();
@@ -93,7 +96,7 @@ namespace StarSarcasm.Infrastructure.Services
 
             var otpCode = new OTP
             {
-                PhoneNumber = model.PhoneNumber,
+                Email=model.Email,
                 Code = otp,
                 ExpirationTime = expirationTime
             };
@@ -101,7 +104,7 @@ namespace StarSarcasm.Infrastructure.Services
             await _context.OTP.AddAsync(otpCode);
             await _context.SaveChangesAsync();
 
-            _oTPService.Send(model.PhoneNumber, otp);
+            await _emailService.SendOtpAsync(model, otp);
 
             return new ResponseModel { IsSuccess = true, StatusCode = 200, Message = "OTP Sent Successfully" };
         }
@@ -109,13 +112,14 @@ namespace StarSarcasm.Infrastructure.Services
         public async Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser User)
         {
             var claims = new List<Claim>
-                      {
-                     new Claim(ClaimTypes.Name, User.UserName),
-                     new Claim(ClaimTypes.NameIdentifier, User.Id),
-                     new Claim(JwtRegisteredClaimNames.Sub, User.PhoneNumber),
-                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                     new Claim("uid", User.Id)
-                     };
+            {
+                new Claim(ClaimTypes.Name, User.UserName),
+                new Claim(ClaimTypes.NameIdentifier, User.Id),
+                new Claim(JwtRegisteredClaimNames.Sub, User.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email,User.Email),
+                new Claim("uid", User.Id)
+            };
             var roles = await _userManager.GetRolesAsync(User);
             foreach (var role in roles)
             {
@@ -132,9 +136,9 @@ namespace StarSarcasm.Infrastructure.Services
                 );
             return Token;
         }
-        public async Task<ResponseModel> VerifyOTP(string phoneNumber, string otpCode)
+        public async Task<ResponseModel> VerifyOTP(string email, string otpCode)
         {
-            var otpRecord = await _context.OTP.FirstOrDefaultAsync(o => o.PhoneNumber == phoneNumber && o.Code == otpCode);
+            var otpRecord = await _context.OTP.FirstOrDefaultAsync(o => o.Email == email && o.Code == otpCode);
 
             if (otpRecord == null)
             {
@@ -146,7 +150,7 @@ namespace StarSarcasm.Infrastructure.Services
                 return new ResponseModel { Message = "OTP Has Expired", IsSuccess = false, StatusCode = 400 };
             }
 
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
+            var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
             {
@@ -162,7 +166,8 @@ namespace StarSarcasm.Infrastructure.Services
                 _context.OTP.Remove(otpRecord);
                 await _context.SaveChangesAsync();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 return new ResponseModel { Message = $"{ex.Message}", IsSuccess = false, StatusCode = 400 };
             }
 
@@ -171,7 +176,8 @@ namespace StarSarcasm.Infrastructure.Services
                 Message = "Login Successfully",
                 IsSuccess = true,
                 StatusCode = 200,
-                Model = new { 
+                Model = new
+                { 
                     Token= new JwtSecurityTokenHandler().WriteToken(token),
                     Roles= userRoles,
                 }

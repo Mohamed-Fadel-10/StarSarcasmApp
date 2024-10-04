@@ -12,9 +12,9 @@ namespace StarSarcasm.Application.DTOs.LogIn
         [Required(ErrorMessage = "User Name is required.")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Phone number is required.")]
-        [PhoneNumberValidation(ErrorMessage = "Please enter a valid phone number with the correct country code.")]
-        public string PhoneNumber { get; set; }
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email.")]
+        public string Email { get; set; }
 
         public string DeviceIPAddress { get; set; }
 
