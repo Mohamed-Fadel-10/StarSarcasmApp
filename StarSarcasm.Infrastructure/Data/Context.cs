@@ -58,6 +58,7 @@ namespace StarSarcasm.Infrastructure.Data
 
         }
 
+        public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<Draw> Draws { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }

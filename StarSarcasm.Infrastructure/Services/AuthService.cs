@@ -48,6 +48,7 @@ namespace StarSarcasm.Infrastructure.Services
                     UserName = model.Name,
                     Name = model.Name,
                     Email = model.Email,
+                   
                 };
                 user.DeviceIpAddress = (user.DeviceIpAddress ?? Array.Empty<string>())
                     .Append(model.DeviceIPAddress).ToArray();
@@ -136,6 +137,8 @@ namespace StarSarcasm.Infrastructure.Services
                 );
             return Token;
         }
+
+
         public async Task<ResponseModel> VerifyOTP(string email, string otpCode)
         {
             var otpRecord = await _context.OTP.FirstOrDefaultAsync(o => o.Email == email && o.Code == otpCode);
@@ -160,7 +163,7 @@ namespace StarSarcasm.Infrastructure.Services
             var token = await GenerateJwtToken(user);
             var userRoles = await _userManager.GetRolesAsync(user);
 
-            user.PhoneNumberConfirmed = true;
+            user.EmailConfirmed = true;
             try
             {
                 _context.OTP.Remove(otpRecord);

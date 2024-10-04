@@ -1,3 +1,4 @@
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Interfaces.ISMSService;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.Email;
+using StarSarcasm.Infrastructure.BackgroundJobs;
 using StarSarcasm.Infrastructure.Data;
 using StarSarcasm.Infrastructure.Services;
 using StarSarcasm.Infrastructure.Services.SMSServices;
@@ -80,6 +82,16 @@ builder.Services.AddAuthentication(option =>
 
 });
 
+// Hangfire Service
+builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<MessageScheduler>(); 
+builder.Services.AddScoped<MessageService>();
+
+//Firebase Services 
+builder.Services.AddScoped<FirebaseNotificationService>();
+
+// Identity Services
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedPhoneNumber = true;
@@ -95,6 +107,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddTransient<IOTPService, OTPService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 
 builder.Services.AddDbContext<Context>(options =>
@@ -126,6 +139,16 @@ app.UseStaticFiles();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/dashborad");
+using (var scope = app.Services.CreateScope())
+{
+    var scheduler = scope.ServiceProvider.GetRequiredService<MessageScheduler>();
+
+     scheduler.ScheduleMessagesForUnsubscribedUsers();
+     scheduler.ScheduleMessagesForSubscribedUsers();
+     scheduler.ScheduleMessagesForSubscribedUsersTest();
+}
 
 app.MapControllers();
 
