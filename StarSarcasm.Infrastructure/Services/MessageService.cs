@@ -65,7 +65,7 @@ namespace StarSarcasm.Infrastructure.Services
         }
 
 
-        public async Task<List<MessageDTO>> GetUserMessages(string id)
+        public async Task<List<MessageDTO>> GetUserMessages(string userId)
         {
             var messages = await _context.UsersMessages
                 .Join(_context.Users,
@@ -78,7 +78,7 @@ namespace StarSarcasm.Infrastructure.Services
                 (um, m) => new { UserMessages = um, Message = m }).ToListAsync();
 
             var userMessages= messages
-                              .Where(u=>u.UserMessages.User.Id == id)
+                              .Where(u=>u.UserMessages.User.Id == userId)
                               .Select(m=> new MessageDTO
                               {
                                   Id=m.Message.Id,

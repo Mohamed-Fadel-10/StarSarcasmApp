@@ -16,10 +16,10 @@ namespace StarSarcasm.Presentation.Controllers
             _messageService = messageService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> UserMessages(string id)
+        [HttpGet("usermessages")]
+        public async Task<IActionResult> UserMessages(string userId)
         {
-            var Response=await _messageService.GetUserMessages(id);
+            var Response=await _messageService.GetUserMessages(userId);
             if (Response.Count>0) {
                 return Ok(Response);
             }

@@ -57,6 +57,7 @@ namespace StarSarcasm.Infrastructure.Services
                 UserName = model.Name,
                 Name = model.Name,
                 Email = model.Email,
+                FcmToken=model.FcmToken,
             };
 
             var result = await _userManager.CreateAsync(user,model.Password);
