@@ -147,7 +147,7 @@ using (var scope = app.Services.CreateScope())
 
      scheduler.ScheduleMessagesForUnsubscribedUsers();
      scheduler.ScheduleMessagesForSubscribedUsers();
-     scheduler.ScheduleMessagesForSubscribedUsersTest();
+     //scheduler.ScheduleMessagesForSubscribedUsersTest();
 }
 
 app.MapControllers();

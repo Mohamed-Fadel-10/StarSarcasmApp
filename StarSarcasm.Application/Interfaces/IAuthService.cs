@@ -1,4 +1,6 @@
-﻿using StarSarcasm.Application.DTOs.LogIn;
+﻿using StarSarcasm.Application.DTOs;
+using StarSarcasm.Application.DTOs.LogIn;
+using StarSarcasm.Application.DTOs.Register;
 using StarSarcasm.Application.Response;
 using StarSarcasm.Domain.Entities;
 using System;
@@ -12,8 +14,10 @@ namespace StarSarcasm.Application.Interfaces
 {
     public interface IAuthService
     {
+        public Task<ResponseModel> RegisterAsync(RegisterDTO dto);
         public Task<ResponseModel> LogInAsync(LogInDTO model);
-        public Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser User); 
-        public Task<ResponseModel> VerifyOTP(string phoneNumber, string otpCode);
+        public Task<ResponseModel> VerifyOTP(string email, string otpCode);
+        public Task<ResponseModel> ForgetPassword(string email);
+        public Task<ResponseModel> ChangePassword(ChangePasswordDTO dto);
     }
 }

@@ -31,13 +31,14 @@ namespace StarSarcasm.Infrastructure.BackgroundJobs
                 "0 8,12,16,20,23 * * *"); 
         }
 
-        public void ScheduleMessagesForSubscribedUsersTest()
-        {
-            // The cron expression for every 2 minutes: */2 * * * *
-            RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
-                () => _messageService.SendMessagesToUnSubscribedUsers(),
-                "*/2 * * * *");  // Cron expression as a string for every 2 minutes
-        }
+
+        // This For Test Hangfire in a few Minutes 
+        //public void ScheduleMessagesForSubscribedUsersTest()
+        //{
+        //    RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
+        //        () => _messageService.SendMessagesToUnSubscribedUsers(),
+        //        "*/2 * * * *");  
+        //}
 
 
     }

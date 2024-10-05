@@ -1,4 +1,5 @@
 ﻿using StarSarcasm.Application.DTOs.LogIn;
+using StarSarcasm.Application.DTOs.Register;
 using StarSarcasm.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace StarSarcasm.Application.Interfaces
 {
     public interface IEmailService
     {
-        Task SendOtpAsync(LogInDTO user, string otp);
+        Task SendOtpAsync(string userEmail, string otp);
 
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.DTOs.LogIn;
 using StarSarcasm.Application.DTOs.Register;
 using StarSarcasm.Application.Interfaces;
@@ -13,6 +14,7 @@ using StarSarcasm.Infrastructure.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 
@@ -37,107 +39,103 @@ namespace StarSarcasm.Infrastructure.Services
             this._configuration = _configuration;
             _emailService = emailService;
         }
-        public async Task<ResponseModel> LogInAsync(LogInDTO model)
+
+        public async Task<ResponseModel> RegisterAsync(RegisterDTO model)
         {
-            var isUserExist = await _userManager.FindByEmailAsync(model.Email);
-
-            if (isUserExist == null)
+            if(await _userManager.FindByEmailAsync(model.Email) != null)
             {
-                var user = new ApplicationUser
-                {
-                    UserName = model.Name,
-                    Name = model.Name,
-                    Email = model.Email,
-                   
-                };
-                user.DeviceIpAddress = (user.DeviceIpAddress ?? Array.Empty<string>())
-                    .Append(model.DeviceIPAddress).ToArray();
-
-                var result = await _userManager.CreateAsync(user);
-                if (!result.Succeeded)
-                {
-                    return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Create User" };
-                }
-
-                if (!await _roleManager.RoleExistsAsync("User"))
-                {
-                    var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
-                    if (!roleResult.Succeeded)
-                    {
-                        return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Create Role" };
-                    }
-                }
-                var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
-                if (!addToRoleResult.Succeeded)
-                {
-                    return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Add User to Role" };
-                }
-            }
-
-            if (isUserExist!=null && isUserExist.DeviceIpAddress.Contains(model.DeviceIPAddress))
-            {
-                var token = await GenerateJwtToken(isUserExist);
-                var userRoles = await _userManager.GetRolesAsync(isUserExist);
-
                 return new ResponseModel
                 {
-                    Message = "Login Successfully",
-                    IsSuccess = true,
-                    StatusCode = 200,
-                    Model = new
-                    {
-                        Token = new JwtSecurityTokenHandler().WriteToken(token),
-                        Roles = userRoles,
-                    }
+                    IsSuccess = false,
+                    Message = "This user is already exists.",
+                    StatusCode = 400
                 };
             }
 
-            var otp = _oTPService.GenerateOTP();
-            var expirationTime = DateTime.UtcNow.AddMinutes(10);
-
-            var otpCode = new OTP
+            var user = new ApplicationUser
             {
-                Email=model.Email,
-                Code = otp,
-                ExpirationTime = expirationTime
+                UserName = model.Name,
+                Name = model.Name,
+                Email = model.Email,
             };
 
-            await _context.OTP.AddAsync(otpCode);
-            await _context.SaveChangesAsync();
-
-            await _emailService.SendOtpAsync(model, otp);
-
-            return new ResponseModel { IsSuccess = true, StatusCode = 200, Message = "OTP Sent Successfully" };
-        }
-
-        public async Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser User)
-        {
-            var claims = new List<Claim>
+            var result = await _userManager.CreateAsync(user,model.Password);
+            if (!result.Succeeded)
             {
-                new Claim(ClaimTypes.Name, User.UserName),
-                new Claim(ClaimTypes.NameIdentifier, User.Id),
-                new Claim(JwtRegisteredClaimNames.Sub, User.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email,User.Email),
-                new Claim("uid", User.Id)
-            };
-            var roles = await _userManager.GetRolesAsync(User);
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Create User" };
             }
-            SecurityKey Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]));
-            SigningCredentials signingCred = new SigningCredentials(Key, SecurityAlgorithms.HmacSha256);
-            var Token = new JwtSecurityToken(
-                issuer: _configuration["JWT:issuer"],
-                audience: _configuration["JWT:audience"],
-                claims: claims,
-                signingCredentials: signingCred,
-                expires: DateTime.UtcNow.AddHours(3)
-                );
-            return Token;
+
+            if (!await _roleManager.RoleExistsAsync("User"))
+            {
+                var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
+                if (!roleResult.Succeeded)
+                {
+                    return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Create Role" };
+                }
+            }
+
+            var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+            if (!addToRoleResult.Succeeded)
+            {
+                return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Add User to Role" };
+            }
+
+            var otp = await _oTPService.GenerateOTP(model.Email);           
+            await _emailService.SendOtpAsync(model.Email, otp);
+
+            return new ResponseModel { IsSuccess = true, StatusCode = 200, Message = "OTP Sent Successfully, it’s valid for 10 minuets." };
+
         }
 
+        public async Task<ResponseModel> LogInAsync(LogInDTO model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null || !await _userManager.CheckPasswordAsync(user,model.Password))
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    Message = "Invalid email or password!",
+                    StatusCode = 400
+                };
+            }
+
+            var token = await GenerateJwtToken(user);
+            var refreshToken = "";
+            DateTime refreshTokenExpiration;
+
+            if (user.RefreshTokens!.Any(t => t.IsActive))
+            {
+                var activeToken = user.RefreshTokens.FirstOrDefault(t => t.IsActive);
+                refreshToken = activeToken.Token;
+                refreshTokenExpiration = activeToken.ExpiresOn;
+            }
+            else
+            {
+                var RefreshToken = CreateRefreshToken();
+                refreshToken = RefreshToken.Token;
+                refreshTokenExpiration = RefreshToken.ExpiresOn;
+                user.RefreshTokens.Add(RefreshToken);
+                await _userManager.UpdateAsync(user);
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            return new ResponseModel
+            {
+                Message = "Loged in Successfully.",
+                IsSuccess = true,
+                StatusCode = 200,
+                Model = new
+                {
+                    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                    RefreshToken=refreshToken,
+                    RefreshTokenExpiration=refreshTokenExpiration,
+                    Roles = userRoles,
+                }
+            };
+
+        }
 
         public async Task<ResponseModel> VerifyOTP(string email, string otpCode)
         {
@@ -176,7 +174,7 @@ namespace StarSarcasm.Infrastructure.Services
 
             return new ResponseModel
             {
-                Message = "Login Successfully",
+                Message = $"Congartulations {user.Name}, Verfication is done successfully.",
                 IsSuccess = true,
                 StatusCode = 200,
                 Model = new
@@ -184,6 +182,116 @@ namespace StarSarcasm.Infrastructure.Services
                     Token= new JwtSecurityTokenHandler().WriteToken(token),
                     Roles= userRoles,
                 }
+            };
+        }
+
+        public async Task<ResponseModel> ForgetPassword(string email)
+        {
+            if(await _userManager.FindByEmailAsync(email)==null)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Invalid email!"
+                };
+            }
+
+            var otp = await _oTPService.GenerateOTP(email);
+            await _emailService.SendOtpAsync(email, otp);
+
+            return new ResponseModel 
+            { 
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "OTP Sent Successfully, please verify your email within 10 minuets."
+            };
+
+        }
+
+        public async Task<ResponseModel> ChangePassword(ChangePasswordDTO dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if(user == null)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Invalid email!"
+                };
+            }
+
+            var removeResult = await _userManager.RemovePasswordAsync(user);
+            if (!removeResult.Succeeded)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Failed to remove old password!"
+                };
+            }
+
+            var addResult = await _userManager.AddPasswordAsync(user, dto.NewPassword);
+            if (!addResult.Succeeded)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "Failed to create new password!"
+                };
+            }
+
+            return new ResponseModel
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Message = "Password changed successfully.",
+            };
+        }
+
+
+        private async Task<JwtSecurityToken> GenerateJwtToken(ApplicationUser User)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, User.UserName),
+                new Claim(ClaimTypes.NameIdentifier, User.Id),
+                new Claim(JwtRegisteredClaimNames.Sub, User.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email,User.Email),
+                new Claim("uid", User.Id)
+            };
+            var roles = await _userManager.GetRolesAsync(User);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+            SecurityKey Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]));
+            SigningCredentials signingCred = new SigningCredentials(Key, SecurityAlgorithms.HmacSha256);
+            var Token = new JwtSecurityToken(
+                issuer: _configuration["JWT:issuer"],
+                audience: _configuration["JWT:audience"],
+                claims: claims,
+                signingCredentials: signingCred,
+                expires: DateTime.UtcNow.AddHours(3)
+                );
+            return Token;
+        }
+
+        private RefreshToken CreateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var generator = new RNGCryptoServiceProvider();
+            generator.GetBytes(randomNumber);
+
+            return new RefreshToken
+            {
+                Token = Convert.ToBase64String(randomNumber),
+                ExpiresOn = DateTime.UtcNow.AddHours(3),
+                CreatedOn = DateTime.UtcNow
             };
         }
 
