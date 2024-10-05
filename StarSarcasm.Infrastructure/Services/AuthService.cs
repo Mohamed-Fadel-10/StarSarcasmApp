@@ -102,6 +102,11 @@ namespace StarSarcasm.Infrastructure.Services
                 };
             }
 
+            if (model.FcmToken != user.FcmToken)
+            {
+                user.FcmToken= model.FcmToken;
+                await _userManager.UpdateAsync(user);
+            }
             var token = await GenerateJwtToken(user);
             var refreshToken = "";
             DateTime refreshTokenExpiration;

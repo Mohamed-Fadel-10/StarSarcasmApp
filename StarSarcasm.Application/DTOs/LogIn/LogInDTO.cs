@@ -18,5 +18,8 @@ namespace StarSarcasm.Application.DTOs.LogIn
         [PasswordPropertyText]
         public string Password { get; set; }
 
+        public string FcmToken { get; set; }
+
+
     }
 }
