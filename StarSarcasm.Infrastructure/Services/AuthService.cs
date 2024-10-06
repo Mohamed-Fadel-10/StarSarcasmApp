@@ -57,7 +57,7 @@ namespace StarSarcasm.Infrastructure.Services
                 UserName = model.Name,
                 Name = model.Name,
                 Email = model.Email,
-                FcmToken=model.FcmToken,
+                FcmToken=string.Empty,
             };
 
             var result = await _userManager.CreateAsync(user,model.Password);
@@ -134,6 +134,9 @@ namespace StarSarcasm.Infrastructure.Services
                 StatusCode = 200,
                 Model = new
                 {
+                    UserId= user.Id,
+                    IsSubscribed=user.IsSubscribed,
+                    Email=user.Email,
                     Token = new JwtSecurityTokenHandler().WriteToken(token),
                     RefreshToken=refreshToken,
                     RefreshTokenExpiration=refreshTokenExpiration,
@@ -164,9 +167,6 @@ namespace StarSarcasm.Infrastructure.Services
                 return new ResponseModel { Message = "User Not found", IsSuccess = false, StatusCode = 400 };
             }
 
-            var token = await GenerateJwtToken(user);
-            var userRoles = await _userManager.GetRolesAsync(user);
-
             user.EmailConfirmed = true;
             try
             {
@@ -183,11 +183,6 @@ namespace StarSarcasm.Infrastructure.Services
                 Message = $"Congartulations {user.Name}, Verfication is done successfully.",
                 IsSuccess = true,
                 StatusCode = 200,
-                Model = new
-                { 
-                    Token= new JwtSecurityTokenHandler().WriteToken(token),
-                    Roles= userRoles,
-                }
             };
         }
 
