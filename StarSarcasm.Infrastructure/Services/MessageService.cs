@@ -14,7 +14,7 @@ namespace StarSarcasm.Infrastructure.Services
 {
     public class MessageService:IMessageService
     {
-        private readonly Context _context;      
+        private readonly Context _context;
 
         public MessageService(Context context, FirebaseNotificationService firebaseNotificationService)
         {
@@ -30,10 +30,10 @@ namespace StarSarcasm.Infrastructure.Services
             return messages;
         }
 
-        private async Task<ResponseModel> SendMessagesToUsers(List<Message> messages,bool IsSubscribed)
+        private async Task<ResponseModel> SendMessagesToUsers(List<Message> messages, bool IsSubscribed)
         {
             var users = await _context.Users
-                .Where(u=>u.IsSubscribed == IsSubscribed)
+                .Where(u => u.IsSubscribed == IsSubscribed)
                 .ToListAsync();
 
             foreach (var user in users)
@@ -44,10 +44,10 @@ namespace StarSarcasm.Infrastructure.Services
                         .AddAsync(new UsersMessages
                         {
                             MessageId = message.Id,
-                            UserId = user.Id 
+                            UserId = user.Id
                         });
-                   
-                }      
+
+                }
             }
             await _context.SaveChangesAsync();
             return new ResponseModel { IsSuccess = true, Message = "Messages Sent Successfully" };
@@ -55,12 +55,12 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task SendMessagesToSubscribedUsers()
         {
-            var messages = await GetRandomMessages(1); 
-            await SendMessagesToUsers(messages, true);  
+            var messages = await GetRandomMessages(1);
+            await SendMessagesToUsers(messages, true);
         }
         public async Task SendMessagesToUnSubscribedUsers()
         {
-            var messages = await GetRandomMessages(1); 
+            var messages = await GetRandomMessages(1);
             await SendMessagesToUsers(messages, false);
         }
 
@@ -77,17 +77,17 @@ namespace StarSarcasm.Infrastructure.Services
                 m => m.Id,
                 (um, m) => new { UserMessages = um, Message = m }).ToListAsync();
 
-            var userMessages= messages
-                              .Where(u=>u.UserMessages.User.Id == userId)
-                              .Select(m=> new MessageDTO
+            var userMessages = messages
+                              .Where(u => u.UserMessages.User.Id == userId)
+                              .Select(m => new MessageDTO
                               {
-                                  Id=m.Message.Id,
-                                  Title=m.Message.Title,
-                                  Content=m.Message.Content,
+                                  Id = m.Message.Id,
+                                  Title = m.Message.Title,
+                                  Content = m.Message.Content,
                               })
                               .ToList();
 
-            return userMessages.Any()? userMessages : new List<MessageDTO>();
+            return userMessages.Any() ? userMessages : new List<MessageDTO>();
         }
 
     }

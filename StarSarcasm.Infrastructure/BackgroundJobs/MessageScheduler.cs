@@ -14,21 +14,21 @@ namespace StarSarcasm.Infrastructure.BackgroundJobs
         private readonly IMessageService _messageService;
         public MessageScheduler(IMessageService messageService)
         {
-            _messageService=messageService;
+            _messageService = messageService;
         }
 
         public void ScheduleMessagesForUnsubscribedUsers()
         {
             RecurringJob.AddOrUpdate("SendMessagesToUnsubscribed",
                 () => _messageService.SendMessagesToUnSubscribedUsers(),
-                "0 9,17 * * *"); 
+                "0 9,17 * * *");
         }
 
         public void ScheduleMessagesForSubscribedUsers()
         {
             RecurringJob.AddOrUpdate("SendMessagesToSubscribed",
                 () => _messageService.SendMessagesToUnSubscribedUsers(),
-                "0 8,12,16,20,23 * * *"); 
+                "0 8,12,16,20,23 * * *");
         }
 
 
