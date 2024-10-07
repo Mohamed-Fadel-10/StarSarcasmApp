@@ -94,7 +94,7 @@ builder.Services.AddScoped<FirebaseNotificationService>();
 // Identity Services
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    options.SignIn.RequireConfirmedPhoneNumber = true;
+    options.SignIn.RequireConfirmedEmail = true;
 })
     .AddEntityFrameworkStores<Context>()
     .AddDefaultTokenProviders()
@@ -108,6 +108,7 @@ builder.Services.AddTransient<IOTPService, OTPService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 
 builder.Services.AddDbContext<Context>(options =>
@@ -148,7 +149,7 @@ using (var scope = app.Services.CreateScope())
      scheduler.ScheduleMessagesForSubscribedUsers();
      //scheduler.ScheduleMessagesForSubscribedUsersTest();
 }
-
+app.UseCors();
 app.MapControllers();
 
 app.Run();

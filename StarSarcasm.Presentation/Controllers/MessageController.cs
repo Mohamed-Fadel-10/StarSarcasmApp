@@ -17,6 +17,8 @@ namespace StarSarcasm.Presentation.Controllers
         {
             _messageService = messageService;
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("usermessages")]
         public async Task<IActionResult> UserMessages(string userId)
         {

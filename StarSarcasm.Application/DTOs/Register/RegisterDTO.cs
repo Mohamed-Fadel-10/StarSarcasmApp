@@ -24,7 +24,5 @@ namespace StarSarcasm.Application.DTOs.Register
         [Compare("Password",ErrorMessage ="Not Matched!")]
         public string ConfirmPassword { get; set; }
 
-        public string FcmToken { get; set; }
-
     }
 }
