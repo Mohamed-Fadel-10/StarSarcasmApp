@@ -44,7 +44,8 @@ namespace StarSarcasm.Infrastructure.Services
                         .AddAsync(new UsersMessages
                         {
                             MessageId = message.Id,
-                            UserId = user.Id
+                            UserId = user.Id,
+                            SendAt=DateTime.Now,
                         });
 
                 }
@@ -84,6 +85,7 @@ namespace StarSarcasm.Infrastructure.Services
                                   Id = m.Message.Id,
                                   Title = m.Message.Title,
                                   Content = m.Message.Content,
+                                  SandedAt=m.UserMessages.UserMessages.SendAt,
                               })
                               .ToList();
 

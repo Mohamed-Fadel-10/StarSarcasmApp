@@ -32,13 +32,14 @@ namespace StarSarcasm.Infrastructure.BackgroundJobs
         }
 
 
-        // This For Test Hangfire in a few Minutes 
-        //public void ScheduleMessagesForSubscribedUsersTest()
-        //{
-        //    RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
-        //        () => _messageService.SendMessagesToUnSubscribedUsers(),
-        //        "*/2 * * * *");  
-        //}
+        // This For Test Hangfire in a few Minutes
+        public void ScheduleMessagesForSubscribedUsersTest()
+        {
+            RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
+                () => _messageService.SendMessagesToUnSubscribedUsers(),
+                "0 * * * *"); 
+        }
+
 
 
     }

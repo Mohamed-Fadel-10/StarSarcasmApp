@@ -18,7 +18,7 @@ namespace StarSarcasm.Presentation.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet]
+        [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
             var response=await _userService.GetAll();
@@ -28,6 +28,19 @@ namespace StarSarcasm.Presentation.Controllers
 
             }
             return StatusCode(StatusCodes.Status200OK, response);
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("profile")]
+        public async Task<IActionResult> Profile(string id)
+        {
+            var response = await _userService.Profile(id);
+            if (!response.IsSuccess)
+            {
+                return StatusCode(response.StatusCode, response.Message);
+
+            }
+            return StatusCode(response.StatusCode, response.Model);
         }
     }
 }

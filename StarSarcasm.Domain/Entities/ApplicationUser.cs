@@ -8,6 +8,9 @@ namespace StarSarcasm.Domain.Entities
         public string Name { get; set; }
         public string FcmToken { get; set; }
         public bool IsSubscribed { get; set; }
+        public DateTime BirthDate { get; set; }
+
+        public string Location { get; set; }
 
         public virtual ICollection<UsersDraws>? UsersDraws { get; set; } = new List<UsersDraws>();
         public virtual ICollection<UsersMessages>? UsersMessages { get; set; } = new List<UsersMessages>();

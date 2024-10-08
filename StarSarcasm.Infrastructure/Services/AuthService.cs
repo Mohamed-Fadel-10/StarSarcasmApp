@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -58,6 +59,8 @@ namespace StarSarcasm.Infrastructure.Services
                 Name = model.Name,
                 Email = model.Email,
                 FcmToken=string.Empty,
+                Location= model.Location,
+                BirthDate = model.BirthDate.Date,
             };
 
             var result = await _userManager.CreateAsync(user,model.Password);
@@ -137,6 +140,8 @@ namespace StarSarcasm.Infrastructure.Services
                     UserId= user.Id,
                     IsSubscribed=user.IsSubscribed,
                     Email=user.Email,
+                    Location=user.Location,
+                    BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
                     Token = new JwtSecurityTokenHandler().WriteToken(token),
                     RefreshToken=refreshToken,
                     RefreshTokenExpiration=refreshTokenExpiration,

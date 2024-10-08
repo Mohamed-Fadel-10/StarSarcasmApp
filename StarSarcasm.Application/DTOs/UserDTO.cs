@@ -13,5 +13,7 @@ namespace StarSarcasm.Application.DTOs
         public string Email { get; set; }
         public bool IsSubscribed { get; set; }
         public string FcmToken { get; set; }
+        public string Location { get; set; }
+        public string BirthDate { get; set; }
     }
 }

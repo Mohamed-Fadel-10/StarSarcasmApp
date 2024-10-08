@@ -16,6 +16,12 @@ namespace StarSarcasm.Application.DTOs.Register
         [EmailAddress(ErrorMessage = "Please,enter a valid email!")]
         public string Email { get; set; }
 
+        [Required]
+        public DateTime BirthDate { get; set; }
+
+        public string Location  { get; set; }
+
+
         [Required(ErrorMessage = "Password is required!")]
         [DataType(DataType.Password,ErrorMessage =
             "Password must contain uppercase and lowercase letters, numbers and special characters.")]
@@ -23,6 +29,7 @@ namespace StarSarcasm.Application.DTOs.Register
 
         [Compare("Password",ErrorMessage ="Not Matched!")]
         public string ConfirmPassword { get; set; }
+
 
     }
 }

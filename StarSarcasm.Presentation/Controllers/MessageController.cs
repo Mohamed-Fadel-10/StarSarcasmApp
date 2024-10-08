@@ -26,7 +26,7 @@ namespace StarSarcasm.Presentation.Controllers
             if (Response.Count>0) {
                 return Ok(Response);
             }
-            return BadRequest(Response);
+            return NotFound("No Messages Until Now For This User");
         }
     }
 }

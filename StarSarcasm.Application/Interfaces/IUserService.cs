@@ -11,6 +11,7 @@ namespace StarSarcasm.Application.Interfaces
 {
     public interface IUserService
     {
-        Task<List<UserDTO>> GetAll();
+        public  Task<List<UserDTO>> GetAll();
+        public Task<ResponseModel> Profile(string id);
     }
 }
