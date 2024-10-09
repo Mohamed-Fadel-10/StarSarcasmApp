@@ -42,5 +42,17 @@ namespace StarSarcasm.Presentation.Controllers
             }
             return StatusCode(response.StatusCode, response.Model);
         }
+
+        [HttpDelete]
+        public async Task<IActionResult> ReomveUser(string id)
+        {
+            var response=await _userService.RemoveUser(id);
+            if (response.IsSuccess)
+            {
+               return StatusCode(response.StatusCode,response.Message);
+            }
+            return StatusCode(response.StatusCode, response.Message);
+
+        }
     }
 }

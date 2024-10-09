@@ -13,5 +13,6 @@ namespace StarSarcasm.Application.Interfaces
     {
         public  Task<List<UserDTO>> GetAll();
         public Task<ResponseModel> Profile(string id);
+        public Task<ResponseModel> RemoveUser(string id);
     }
 }

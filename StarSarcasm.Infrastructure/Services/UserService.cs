@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Response;
+using StarSarcasm.Domain.Entities;
 using StarSarcasm.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -14,10 +16,12 @@ namespace StarSarcasm.Infrastructure.Services
     public class UserService : IUserService
     {
         private readonly Context _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserService(Context context)
+        public UserService(Context context, UserManager<ApplicationUser> _userManager)
         {
             _context = context;
+          this._userManager = _userManager;
         }
 
         public async Task<List<UserDTO>> GetAll()
@@ -69,6 +73,23 @@ namespace StarSarcasm.Infrastructure.Services
                     Location=user.Location,
                 }
             };
+        }
+        public async Task<ResponseModel> RemoveUser(string id)
+        {
+            var user= await _userManager.FindByIdAsync(id);
+            if (user == null) {
+
+                return new ResponseModel { IsSuccess = false, Message = "User Not Exist !",StatusCode=404 };
+            }
+             var result=  await _userManager.DeleteAsync(user);
+
+            return result.Succeeded ? new ResponseModel { IsSuccess = true,StatusCode=200,Message="User Deleted Successfully" } :
+                new ResponseModel { 
+                    IsSuccess = false, 
+                    StatusCode = 400, 
+                    Message = "Cannot Delete User" 
+            };
+
         }
     }
 }
