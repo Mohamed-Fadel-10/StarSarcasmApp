@@ -104,6 +104,15 @@ namespace StarSarcasm.Infrastructure.Services
                     StatusCode = 400
                 };
             }
+            if (!user.EmailConfirmed)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    Message = "Invalid email or password!",
+                    StatusCode = 400
+                };
+            }
 
             if (model.FcmToken != user.FcmToken)
             {

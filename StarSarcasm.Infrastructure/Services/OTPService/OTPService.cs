@@ -20,7 +20,7 @@ namespace StarSarcasm.Infrastructure.Services.SMSServices
         {
             int otp = RandomNumberGenerator.GetInt32(100000, 999999);
 
-            var expirationTime = DateTime.UtcNow.AddMinutes(10);
+            var expirationTime = DateTime.UtcNow.AddMinutes(5);
 
             var otpCode = new OTP
             {
