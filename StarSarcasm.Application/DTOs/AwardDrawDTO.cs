@@ -2,26 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace StarSarcasm.Domain.Entities
+namespace StarSarcasm.Application.DTOs
 {
-    public class Draw
+    public class AwardDrawDTO
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public string? Description { get; set; }
-        public DateTime StartAt {  get; set; }
+        public DateTime StartAt { get; set; }
         public DateTime EndAt { get; set; }
         public bool IsActive => DateTime.Now >= StartAt
             && DateTime.Now <= EndAt ? true : false;
         public string? ImagePath { get; set; }
-        public int SubscribersNumber { get; set; }
-
-        [JsonIgnore]
-        public virtual ICollection<UsersDraws> UsersDraws { get; set; } = new List<UsersDraws>();
-
 
     }
 }

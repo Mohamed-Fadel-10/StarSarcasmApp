@@ -109,6 +109,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserDrawService, UserDrawService>();
+builder.Services.AddScoped<IAwardDrawService,AwardDrawService>();
 
 
 builder.Services.AddDbContext<Context>(options =>

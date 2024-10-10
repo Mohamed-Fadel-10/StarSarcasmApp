@@ -53,6 +53,34 @@ namespace StarSarcasm.Infrastructure.Services
             return dto;
 
         }
+
+        public async Task<List<UserDTO>> GetAllSubscribers()
+        {
+            var subscribers = await _userManager.Users.Where(u => u.IsSubscribed)
+                .ToListAsync();
+            List<UserDTO> dto = new();
+
+            if (subscribers.Any())
+            {  
+                foreach (var subscriber in subscribers)
+                {
+                    var userDto = new UserDTO
+                    {
+                        Id = subscriber.Id,
+                        UserName = subscriber.UserName,
+                        Email = subscriber.Email,
+                        FcmToken = subscriber.FcmToken,
+                        IsSubscribed = subscriber.IsSubscribed,
+                        BirthDate = subscriber.BirthDate.ToString("yyyy-MM-dd"),
+                        Location = subscriber.Location,
+
+                    };
+                    dto.Add(userDto);
+                }
+            }
+            return dto;
+        }
+
         public async Task<ResponseModel> Profile(string id)
         {
             var user = await _context.Users.FindAsync(id);
