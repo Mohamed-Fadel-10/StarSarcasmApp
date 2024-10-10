@@ -17,14 +17,16 @@ namespace StarSarcasm.Presentation.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IOTPService _oTPService;
-       public AccountController(IAuthService _authService, IOTPService _oTPService)
-        {
-           this._authService = _authService;
-            this._oTPService = _oTPService; 
+        private readonly IEmailService _emailService;
 
-        }
+		public AccountController(IAuthService _authService, IOTPService _oTPService, IEmailService emailService)
+		{
+			this._authService = _authService;
+			this._oTPService = _oTPService;
+			_emailService = emailService;
+		}
 
-        [HttpPost("register")]
+		[HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTO dto)
         {
             if (ModelState.IsValid)
@@ -107,5 +109,16 @@ namespace StarSarcasm.Presentation.Controllers
             }
             return StatusCode(Response.StatusCode, Response.Message);
         }
-    }
+
+		[HttpPost("resendOtp")]
+		public async Task<IActionResult> ResendOTP(string email)
+		{
+			var Response = await _emailService.ReSendOtpAsync(email);
+			if (Response.IsSuccess)
+			{
+				return StatusCode(Response.StatusCode, Response.Message);
+			}
+			return StatusCode(Response.StatusCode, Response.Message);
+		}
+	}
 }
