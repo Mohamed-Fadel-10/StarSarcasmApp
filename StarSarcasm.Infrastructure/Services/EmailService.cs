@@ -1,12 +1,16 @@
 ﻿using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using StarSarcasm.Application.DTOs.LogIn;
 using StarSarcasm.Application.DTOs.Register;
 using StarSarcasm.Application.Interfaces;
+using StarSarcasm.Application.Interfaces.ISMSService;
+using StarSarcasm.Application.Response;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.Email;
+using StarSarcasm.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,18 +23,22 @@ namespace StarSarcasm.Infrastructure.Services
     public class EmailService:IEmailService
     {
         private readonly EmailSettings _emailSettings;
+        private readonly Context _context;
+        private readonly IOTPService _oTPService;
 
-        public EmailService(IOptions<EmailSettings> options)
-        {
-            _emailSettings = options.Value;
-        }
+		public EmailService(IOptions<EmailSettings> options, Context context, IOTPService oTPService = null)
+		{
+			_emailSettings = options.Value;
+			_context = context;
+			_oTPService = oTPService;
+		}
 
-        private string OtpBodyGenerator(string otp)
+		private string OtpBodyGenerator(string otp)
         {
             string body = "<div>";
             body += "<h3>Hello,</h3>";
             body += "<h5>Please use the following OTP to verify your email address: </h5>";
-            body += "<h1>" + otp + ".</h1>";
+            body += "<h1>" + otp + "</h1>";
             body += "<br><h5>Have a nice day,</h5>";
             body += "<h6>Star Sarcasm Support Team.</h6>";
             body += "</div>";
@@ -59,5 +67,27 @@ namespace StarSarcasm.Infrastructure.Services
 
             smtp.Disconnect(true);
         }
+
+		public async Task<ResponseModel> ReSendOtpAsync(string userEmail)
+        {
+            var otps = await _context.OTP.Where(o => o.ExpirationTime > DateTime.Now)
+                .ToListAsync();
+
+            if (otps != null)
+            {
+                _context.OTP.RemoveRange(otps);
+            }
+
+            var otp=await _oTPService.GenerateOTP(userEmail);
+            await SendOtpAsync(userEmail, otp);
+
+            return new ResponseModel
+            {
+                Message = "OTP resent successfully, it is valid for 5 min.",
+                StatusCode = 200,
+                IsSuccess = true,
+            };
+        }
+         
     }
 }
