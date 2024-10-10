@@ -19,5 +19,6 @@ namespace StarSarcasm.Application.Interfaces
         public Task<ResponseModel> VerifyOTP(string email, string otpCode);
         public Task<ResponseModel> ForgetPassword(string email);
         public Task<ResponseModel> ChangePassword(ChangePasswordDTO dto);
+        public Task<ResponseModel> NewRefreshToken(string token);
     }
 }

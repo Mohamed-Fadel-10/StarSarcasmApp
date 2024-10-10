@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.DTOs.LogIn;
+using StarSarcasm.Application.DTOs.RefreshToken;
 using StarSarcasm.Application.DTOs.Register;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Interfaces.ISMSService;
@@ -63,6 +66,22 @@ namespace StarSarcasm.Presentation.Controllers
             return BadRequest(ModelState);
         }
 
+        [HttpPost("RefreshToken")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshDTO dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var Response = await _authService.NewRefreshToken(dto.RefreshToken);
+                if (Response.IsSuccess )
+                {
+                    return StatusCode(Response.StatusCode,Response.Model);
+                }
+                return StatusCode(Response.StatusCode, Response.Model);
+            }
+            return BadRequest(ModelState);
+        }
+
         [HttpPost("changepassword")]
         public async Task<IActionResult> ChangePassword(ChangePasswordDTO dto)
         {
@@ -84,17 +103,9 @@ namespace StarSarcasm.Presentation.Controllers
             var Response = await _authService.VerifyOTP(email, otpCode);
             if (Response.IsSuccess)
             {
-                return StatusCode(Response.StatusCode, new
-                {
-                    Message = Response.Message,
-                    Token = Response.Model
-                });
+                return StatusCode(Response.StatusCode, Response.Message);
             }
-            return StatusCode(Response.StatusCode, 
-                new {
-                    Message =Response.Message,
-                    Token = Response.Model
-                });
+            return StatusCode(Response.StatusCode, Response.Message);
         }
     }
 }

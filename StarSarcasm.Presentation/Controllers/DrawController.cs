@@ -7,35 +7,36 @@ namespace StarSarcasm.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AwardDrawController : ControllerBase
+    public class DrawController : ControllerBase
     {
         private readonly IAwardDrawService _awardDrawService;
 
-        public AwardDrawController(IAwardDrawService awardDrawService)
+        public DrawController(IAwardDrawService awardDrawService)
         {
             _awardDrawService = awardDrawService;
         }
 
-        [HttpGet("awardDraw")]
+        [HttpGet("activeDraw")]
         public async Task<IActionResult> GetActiveDraw()
         {
             var response = await _awardDrawService.GetActiveDrawAsync();
-            if(response != null)
+            if(response.IsSuccess)
             {
-                return StatusCode(StatusCodes.Status200OK, response);
+                return StatusCode(response.StatusCode, response.Model);
             }
-            return BadRequest();
+            return StatusCode(response.StatusCode, response.Message);
         }
 
         [HttpPost("addDraw")]
-        public async Task<IActionResult> Add(AwardDrawDTO dto)
+        public async Task<IActionResult> Add([FromForm]DrawDTO dto)
         {
-            var response=await _awardDrawService.AddAsync(dto);
-            if (response != null)
+            var response = await _awardDrawService.AddAsync(dto);
+            if (response.IsSuccess)
             {
-                return StatusCode(StatusCodes.Status200OK, response);
+                return StatusCode(response.StatusCode, response.Model);
             }
-            return BadRequest();
+            return StatusCode(response.StatusCode, response.Message);
         }
+
     }
 }

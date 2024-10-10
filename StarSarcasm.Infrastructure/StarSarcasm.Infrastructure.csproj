@@ -10,6 +10,7 @@
     <Folder Include="Notifications\" />
     <Folder Include="UOW\" />
     <Folder Include="Repositories\" />
+    <Folder Include="Uploads\images\" />
   </ItemGroup>
 
   <ItemGroup>

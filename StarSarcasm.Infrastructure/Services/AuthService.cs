@@ -305,12 +305,60 @@ namespace StarSarcasm.Infrastructure.Services
             return new RefreshToken
             {
                 Token = Convert.ToBase64String(randomNumber),
-                ExpiresOn = DateTime.UtcNow.AddHours(3),
+                ExpiresOn = DateTime.UtcNow.AddDays(8),
                 CreatedOn = DateTime.UtcNow
             };
         }
+        public async Task<ResponseModel> NewRefreshToken(string token)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
+            if (user == null)
+            {
+                return new ResponseModel { IsSuccess = false, Message = "Not Authenticated User", StatusCode = 400 };
+            }
 
+            var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
 
+            if (!refreshToken.IsActive)
+            {
+                return new ResponseModel
+                {                   
+                    Message = "InActive Token",
+                    StatusCode=400,
+                    Model= new
+                    {
+                        IsAuthenticated = false,
+                        UserName = string.Empty,
+                        Email = string.Empty,
+                        Roles = new List<string>(),
+                        Token = string.Empty,
+                    }
+                };
+            }
+
+            refreshToken.RevokedOn = DateTime.UtcNow;
+
+            var newRefreshToken = CreateRefreshToken();
+            user.RefreshTokens.Add(newRefreshToken);
+            await _userManager.UpdateAsync(user);
+            var Roles = await _userManager.GetRolesAsync(user);
+            var jwtToken = await GenerateJwtToken(user);
+
+            return new ResponseModel
+            {               
+                Message = "Active Token",
+                StatusCode=200,
+                Model=new
+                {
+                    IsAuthenticated = true,
+                    UserName = user.UserName,
+                    Roles = Roles.ToList(),
+                    Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                    RefreshToken = newRefreshToken.Token,
+                    RefreshTokenExpiration = newRefreshToken.ExpiresOn
+                }
+            };
+        }
 
     }
 }

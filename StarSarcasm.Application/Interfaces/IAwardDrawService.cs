@@ -1,4 +1,6 @@
-﻿using StarSarcasm.Application.DTOs;
+﻿using Microsoft.AspNetCore.Http;
+using StarSarcasm.Application.DTOs;
+using StarSarcasm.Application.Response;
 using StarSarcasm.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,7 @@ namespace StarSarcasm.Application.Interfaces
 {
     public interface IAwardDrawService
     {
-        Task<Draw> GetActiveDrawAsync();
-        Task<Draw> AddAsync(AwardDrawDTO dto);
+        public Task<ResponseModel> GetActiveDrawAsync();
+        public Task<ResponseModel> AddAsync(DrawDTO dto);
     }
 }

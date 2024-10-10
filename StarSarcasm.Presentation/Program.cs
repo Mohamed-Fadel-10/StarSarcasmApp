@@ -5,12 +5,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StarSarcasm.Application.Interfaces;
+using StarSarcasm.Application.Interfaces.IFileUploadService;
 using StarSarcasm.Application.Interfaces.ISMSService;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.Email;
 using StarSarcasm.Infrastructure.BackgroundJobs;
 using StarSarcasm.Infrastructure.Data;
 using StarSarcasm.Infrastructure.Services;
+using StarSarcasm.Infrastructure.Services.FileUploadService;
 using StarSarcasm.Infrastructure.Services.SMSServices;
 using System.Text;
 
@@ -113,6 +115,7 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserDrawService, UserDrawService>();
 builder.Services.AddScoped<IAwardDrawService,AwardDrawService>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 
 builder.Services.AddDbContext<Context>(options =>
@@ -137,7 +140,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-//app.UseStaticFiles();
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
