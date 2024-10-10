@@ -329,9 +329,10 @@ namespace StarSarcasm.Infrastructure.Services
                     {
                         IsAuthenticated = false,
                         UserName = string.Empty,
-                        Email = string.Empty,
                         Roles = new List<string>(),
                         Token = string.Empty,
+                        RefreshToken = string.Empty,
+                        RefreshTokenExpiration = string.Empty
                     }
                 };
             }
