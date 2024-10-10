@@ -9,6 +9,7 @@ namespace StarSarcasm.Domain.Entities
         public string FcmToken { get; set; }
         public bool IsSubscribed { get; set; }
         public DateTime BirthDate { get; set; }
+        public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 
         public string Location { get; set; }
 

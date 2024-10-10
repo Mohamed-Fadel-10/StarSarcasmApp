@@ -87,6 +87,8 @@ builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.Ge
 builder.Services.AddHangfireServer();
 builder.Services.AddScoped<MessageScheduler>(); 
 builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<UserCleanUpService>();
+builder.Services.AddScoped<UserCleanUpScheduler>();
 
 //Firebase Services 
 builder.Services.AddScoped<FirebaseNotificationService>();
@@ -145,11 +147,13 @@ app.UseAuthorization();
 app.UseHangfireDashboard("/dashborad");
 using (var scope = app.Services.CreateScope())
 {
-    var scheduler = scope.ServiceProvider.GetRequiredService<MessageScheduler>();
+    var messageScheduler = scope.ServiceProvider.GetRequiredService<MessageScheduler>();
+    var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpScheduler>();
 
-     scheduler.ScheduleMessagesForUnsubscribedUsers();
-     scheduler.ScheduleMessagesForSubscribedUsers();
-     scheduler.ScheduleMessagesForSubscribedUsersTest();
+    messageScheduler.ScheduleMessagesForUnsubscribedUsers();
+    messageScheduler.ScheduleMessagesForSubscribedUsers();
+    messageScheduler.ScheduleMessagesForSubscribedUsersTest();
+    userCleanUpScheduler.UserCleanUp();
 }
 app.UseCors();
 app.MapControllers();
