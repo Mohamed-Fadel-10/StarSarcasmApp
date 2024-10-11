@@ -103,8 +103,8 @@ namespace StarSarcasm.Infrastructure.Services
                 winner.LastWinDate=DateTime.Now;
                 _context.UsersDraws.Update(winner);
                 _context.SaveChanges();
-                var user = await _context.Users.FindAsync(winner.UserId);
 
+                var user = await _context.Users.FindAsync(winner.UserId);
 				return new ResponseModel
                 {
                     Model = new UserDTO

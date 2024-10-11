@@ -98,6 +98,7 @@ namespace StarSarcasm.Infrastructure.Services
                     UserName=user.UserName,
                     BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
                     Email=user.Email,
+                    isSubscribed=user.IsSubscribed,
                     Location=user.Location,
                 }
             };

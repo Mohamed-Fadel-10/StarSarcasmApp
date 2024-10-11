@@ -10,11 +10,11 @@ namespace StarSarcasm.Application.DTOs.LogIn
 {
     public class LogInDTO
     {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Please enter a valid email.")]
+        [Required(ErrorMessage = "البريد الالكترونى مطلوب*")]
+        [EmailAddress(ErrorMessage = "يرجى  إدخال بريد الكترونى صالح")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Password is required.")]
+        [Required(ErrorMessage = "كلمة السر مطلوبة*")]
         [PasswordPropertyText]
         public string Password { get; set; }
 

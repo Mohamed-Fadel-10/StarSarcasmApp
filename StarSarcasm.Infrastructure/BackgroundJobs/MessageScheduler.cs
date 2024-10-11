@@ -41,12 +41,13 @@ namespace StarSarcasm.Infrastructure.BackgroundJobs
         //}
 
 
-        public void ScheduleMessagesForSubscribedUsersTest()
-        {
-            RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
-                () => _messageService.SendMessagesToUnSubscribedUsers(),
-                "*/2 * * * *");
-        }
+        //public void ScheduleMessagesForSubscribedUsersTest()
+        //{
+        //    RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
+        //        () => _messageService.SendMessagesToUnSubscribedUsers(),
+        //        "*/5 * * * * *"); 
+        //}
+
 
     }
 }
