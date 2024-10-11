@@ -44,19 +44,23 @@ namespace StarSarcasm.Presentation.Controllers
 
         [HttpPost("login")]
         public async Task<IActionResult> LogIn(LogInDTO model)
-        { 
+        {
+            if (ModelState.IsValid)
+            {
                 var Response = await _authService.LogInAsync(model);
                 if (Response.IsSuccess)
                 {
                     return StatusCode(Response.StatusCode, Response.Model);
                 }
-           return StatusCode(Response.StatusCode,Response.Message);
+                return StatusCode(Response.StatusCode, Response.Message);
+            }
+            return BadRequest(ModelState);
         }
 
         [HttpPost("forgetpassword")]
         public async Task<IActionResult> ForgetPassword(string email)
         {
-            if (ModelState.IsValid)
+            if (!string.IsNullOrEmpty(email))
             {
                 var response=await _authService.ForgetPassword(email);
                 if (response.IsSuccess)
@@ -113,12 +117,16 @@ namespace StarSarcasm.Presentation.Controllers
 		[HttpPost("resendOtp")]
 		public async Task<IActionResult> ResendOTP(string email)
 		{
-			var Response = await _emailService.ReSendOtpAsync(email);
-			if (Response.IsSuccess)
-			{
-				return StatusCode(Response.StatusCode, Response.Message);
-			}
-			return StatusCode(Response.StatusCode, Response.Message);
+            if (!string.IsNullOrEmpty(email))
+            {
+                var Response = await _emailService.ReSendOtpAsync(email);
+                if (Response.IsSuccess)
+                {
+                    return StatusCode(Response.StatusCode, Response.Message);
+                }
+                return StatusCode(Response.StatusCode, Response.Message);
+            }
+            return BadRequest(ModelState);
 		}
 	}
 }

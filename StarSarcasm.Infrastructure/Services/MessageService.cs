@@ -23,12 +23,20 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task<List<Message>> GetRandomMessages(int count)
         {
-            var messages = await _context.Messages
-                .OrderBy(r => Guid.NewGuid())
-                .Take(count)
+            var userMessagesIds = await _context
+                .UsersMessages
+                .Select(um => um.MessageId)
                 .ToListAsync();
+
+            var messages = await _context.Messages
+                .Where(m => !userMessagesIds.Contains(m.Id)) 
+                .OrderBy(r => Guid.NewGuid())
+                .Take(count) 
+                .ToListAsync();
+
             return messages;
         }
+
 
         private async Task<ResponseModel> SendMessagesToUsers(List<Message> messages, bool IsSubscribed)
         {
@@ -47,7 +55,6 @@ namespace StarSarcasm.Infrastructure.Services
                             UserId = user.Id,
                             SendAt=DateTime.Now,
                         });
-
                 }
             }
             await _context.SaveChangesAsync();
@@ -74,7 +81,7 @@ namespace StarSarcasm.Infrastructure.Services
                 u => u.Id,
                 (um, u) => new { UserMessages = um, User = u })
                 .Join(_context.Messages,
-                um => um.UserMessages.Id,
+                um => um.UserMessages.MessageId,
                 m => m.Id,
                 (um, m) => new { UserMessages = um, Message = m }).ToListAsync();
 

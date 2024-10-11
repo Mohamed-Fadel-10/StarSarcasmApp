@@ -155,7 +155,7 @@ using (var scope = app.Services.CreateScope())
 
     messageScheduler.ScheduleMessagesForUnsubscribedUsers();
     messageScheduler.ScheduleMessagesForSubscribedUsers();
-    messageScheduler.ScheduleMessagesForSubscribedUsersTest();
+    //messageScheduler.ScheduleMessagesForSubscribedUsersTest();
     userCleanUpScheduler.UserCleanUp();
 }
 app.UseCors();

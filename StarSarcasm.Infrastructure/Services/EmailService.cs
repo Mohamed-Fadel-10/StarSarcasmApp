@@ -70,22 +70,30 @@ namespace StarSarcasm.Infrastructure.Services
 
 		public async Task<ResponseModel> ReSendOtpAsync(string userEmail)
         {
-            var otps = await _context.OTP.Where(o => o.ExpirationTime > DateTime.Now)
-                .ToListAsync();
-
-            if (otps != null)
+            if (userEmail != null)
             {
-                _context.OTP.RemoveRange(otps);
+                var otps = await _context.OTP.FirstOrDefaultAsync(o => o.ExpirationTime > DateTime.UtcNow && o.Email == userEmail);
+
+                if (otps != null)
+                {
+                    _context.OTP.RemoveRange(otps);
+                }
+
+                var otp = await _oTPService.GenerateOTP(userEmail);
+                await SendOtpAsync(userEmail, otp);
+
+                return new ResponseModel
+                {
+                    Message = "OTP resent successfully, it is valid for 5 min.",
+                    StatusCode = 200,
+                    IsSuccess = true,
+                };
             }
-
-            var otp=await _oTPService.GenerateOTP(userEmail);
-            await SendOtpAsync(userEmail, otp);
-
             return new ResponseModel
             {
-                Message = "OTP resent successfully, it is valid for 5 min.",
-                StatusCode = 200,
-                IsSuccess = true,
+                Message = "invalid Email Address",
+                StatusCode = 400,
+                IsSuccess = false,
             };
         }
          

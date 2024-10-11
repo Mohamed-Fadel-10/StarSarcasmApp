@@ -43,161 +43,184 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task<ResponseModel> RegisterAsync(RegisterDTO model)
         {
-            if(await _userManager.FindByEmailAsync(model.Email) != null)
+            try
+            {
+                if (await _userManager.FindByEmailAsync(model.Email) != null)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        Message = "تم استخدام هذا الحساب من قبل",
+                        StatusCode = 400
+                    };
+                }
+
+                var user = new ApplicationUser
+                {
+                    UserName = model.Name,
+                    Name = model.Name,
+                    Email = model.Email,
+                    FcmToken = string.Empty,
+                    Location = model.Location,
+                    BirthDate = model.BirthDate.Date,
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (!result.Succeeded)
+                {
+                    return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "اسم المستخدم موجود من قبل " };
+                }
+
+                if (!await _roleManager.RoleExistsAsync("User"))
+                {
+                    var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
+                    if (!roleResult.Succeeded)
+                    {
+                        return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "حدث خطأ , قم بالمحاولة مرة اخرى" };
+                    }
+                }
+
+                var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+                if (!addToRoleResult.Succeeded)
+                {
+                    return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = $"{"User"} لا يمكن اضافة هذا المستخدم لهذه الصلاحية " };
+                }
+
+                var otp = await _oTPService.GenerateOTP(model.Email);
+                await _emailService.SendOtpAsync(model.Email, otp);
+
+                return new ResponseModel { IsSuccess = true, StatusCode = 200, Message = "تم ارسال الرقم التأكيدى الى بريدك الالكترونى قم بمراجعتة الرقم ومن ثم تأكيده" };
+            }
+            catch(Exception ex)
             {
                 return new ResponseModel
                 {
                     IsSuccess = false,
-                    Message = "This user is already exists.",
-                    StatusCode = 400
+                    StatusCode = 500,
+                    Message = "حدث خطأ غير متوقع، يرجى المحاولة لاحقًا"
                 };
             }
-
-            var user = new ApplicationUser
-            {
-                UserName = model.Name,
-                Name = model.Name,
-                Email = model.Email,
-                FcmToken=string.Empty,
-                Location= model.Location,
-                BirthDate = model.BirthDate.Date,
-            };
-
-            var result = await _userManager.CreateAsync(user,model.Password);
-            if (!result.Succeeded)
-            {
-                return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Create User" };
-            }
-
-            if (!await _roleManager.RoleExistsAsync("User"))
-            {
-                var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
-                if (!roleResult.Succeeded)
-                {
-                    return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Create Role" };
-                }
-            }
-
-            var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
-            if (!addToRoleResult.Succeeded)
-            {
-                return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Cannot Add User to Role" };
-            }
-
-            var otp = await _oTPService.GenerateOTP(model.Email);           
-            await _emailService.SendOtpAsync(model.Email, otp);
-
-            return new ResponseModel { IsSuccess = true, StatusCode = 200, Message = "OTP Sent Successfully, it’s valid for 10 minuets." };
-
         }
 
         public async Task<ResponseModel> LogInAsync(LogInDTO model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-
-            if (user == null || !await _userManager.CheckPasswordAsync(user,model.Password))
+            try
             {
-                return new ResponseModel
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    IsSuccess = false,
-                    Message = "Invalid email or password!",
-                    StatusCode = 400
-                };
-            }
-            if (!user.EmailConfirmed)
-            {
-                return new ResponseModel
-                {
-                    IsSuccess = false,
-                    Message = "Invalid email or password!",
-                    StatusCode = 400
-                };
-            }
-
-            if (model.FcmToken != user.FcmToken)
-            {
-                user.FcmToken= model.FcmToken;
-                await _userManager.UpdateAsync(user);
-            }
-            var token = await GenerateJwtToken(user);
-            var refreshToken = "";
-            DateTime refreshTokenExpiration;
-
-            if (user.RefreshTokens!.Any(t => t.IsActive))
-            {
-                var activeToken = user.RefreshTokens.FirstOrDefault(t => t.IsActive);
-                refreshToken = activeToken.Token;
-                refreshTokenExpiration = activeToken.ExpiresOn;
-            }
-            else
-            {
-                var RefreshToken = CreateRefreshToken();
-                refreshToken = RefreshToken.Token;
-                refreshTokenExpiration = RefreshToken.ExpiresOn;
-                user.RefreshTokens.Add(RefreshToken);
-                await _userManager.UpdateAsync(user);
-            }
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-            return new ResponseModel
-            {
-                Message = "Loged in Successfully.",
-                IsSuccess = true,
-                StatusCode = 200,
-                Model = new
-                {
-                    UserId= user.Id,
-                    IsSubscribed=user.IsSubscribed,
-                    Email=user.Email,
-                    Location=user.Location,
-                    BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
-                    Token = new JwtSecurityTokenHandler().WriteToken(token),
-                    RefreshToken=refreshToken,
-                    RefreshTokenExpiration=refreshTokenExpiration,
-                    Roles = userRoles,
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        Message = "خطأ فى كلمة السر او البريد الالكترونى",
+                        StatusCode = 401
+                    };
                 }
-            };
+                if (!user.EmailConfirmed)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        Message = "خطأ فى كلمة السر او البريد الالكترونى",
+                        StatusCode = 403
+                    };
+                }
 
+                if (model.FcmToken != user.FcmToken)
+                {
+                    user.FcmToken = model.FcmToken;
+                    await _userManager.UpdateAsync(user);
+                }
+                var token = await GenerateJwtToken(user);
+                var refreshToken = "";
+                DateTime refreshTokenExpiration;
+
+                if (user.RefreshTokens!.Any(t => t.IsActive))
+                {
+                    var activeToken = user.RefreshTokens.FirstOrDefault(t => t.IsActive);
+                    refreshToken = activeToken.Token;
+                    refreshTokenExpiration = activeToken.ExpiresOn;
+                }
+                else
+                {
+                    var RefreshToken = CreateRefreshToken();
+                    refreshToken = RefreshToken.Token;
+                    refreshTokenExpiration = RefreshToken.ExpiresOn;
+                    user.RefreshTokens.Add(RefreshToken);
+                    await _userManager.UpdateAsync(user);
+                }
+
+                var userRoles = await _userManager.GetRolesAsync(user);
+                return new ResponseModel
+                {
+                    Message = "تم تسجيل الخول بنجاح",
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Model = new
+                    {
+                        UserId = user.Id,
+                        IsSubscribed = user.IsSubscribed,
+                        Email = user.Email,
+                        Location = user.Location,
+                        BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
+                        Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        RefreshToken = refreshToken,
+                        RefreshTokenExpiration = refreshTokenExpiration,
+                        Roles = userRoles,
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "حدث خطأ غير متوقع، يرجى المحاولة لاحقًا"
+                };
+            }
         }
 
         public async Task<ResponseModel> VerifyOTP(string email, string otpCode)
         {
-            var otpRecord = await _context.OTP.FirstOrDefaultAsync(o => o.Email == email && o.Code == otpCode);
-
-            if (otpRecord == null)
-            {
-                return new ResponseModel { IsSuccess = false, Message = "Invalid OTP", StatusCode = 400 };
-            }
-
-            if (otpRecord.ExpirationTime < DateTime.UtcNow)
-            {
-                return new ResponseModel { Message = "OTP Has Expired", IsSuccess = false, StatusCode = 400 };
-            }
-
-            var user = await _userManager.FindByEmailAsync(email);
-
-            if (user == null)
-            {
-                return new ResponseModel { Message = "User Not found", IsSuccess = false, StatusCode = 400 };
-            }
-
-            user.EmailConfirmed = true;
             try
             {
+                var otpRecord = await _context.OTP.FirstOrDefaultAsync(o => o.Email == email && o.Code == otpCode);
+
+                if (otpRecord == null)
+                {
+                return new ResponseModel { IsSuccess = false, Message = "الرمز التأكيدى غير صالح", StatusCode = 400 };
+                }
+
+                if (otpRecord.ExpirationTime < DateTime.UtcNow)
+                {
+                return new ResponseModel { Message = "انتهت فترة السماحية للرمز التاكيدى ، قم بطلب لاعادة ارسال رمز اخر لبريدك الالكترونى", IsSuccess = false, StatusCode = 400 };
+                }
+
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                {
+                return new ResponseModel { Message = "المستخدم غير موجود", IsSuccess = false, StatusCode = 400 };
+                }
+
+                user.EmailConfirmed = true;         
                 _context.OTP.Remove(otpRecord);
                 await _context.SaveChangesAsync();
+           
+
+                return new ResponseModel
+                {
+                    Message = $"تم تأكيد حسابك بنجاح قم بالتوجه لصفحة تسجيل الدخول الان",
+                    IsSuccess = true,
+                    StatusCode = 200,
+                };
             }
             catch (Exception ex)
             {
                 return new ResponseModel { Message = $"{ex.Message}", IsSuccess = false, StatusCode = 400 };
             }
-
-            return new ResponseModel
-            {
-                Message = $"Congartulations {user.Name}, Verfication is done successfully.",
-                IsSuccess = true,
-                StatusCode = 200,
-            };
         }
 
         public async Task<ResponseModel> ForgetPassword(string email)
@@ -208,7 +231,7 @@ namespace StarSarcasm.Infrastructure.Services
                 {
                     IsSuccess = false,
                     StatusCode = 400,
-                    Message = "Invalid email!"
+                    Message = "البريد الالكترونى غير صالح"
                 };
             }
 
@@ -219,7 +242,7 @@ namespace StarSarcasm.Infrastructure.Services
             { 
                 IsSuccess = true,
                 StatusCode = 200,
-                Message = "OTP Sent Successfully, please verify your email within 10 minuets."
+                Message = "تم ارسال الرقم التأكيدى الى بريدك الالكترونى قم بمراجعتة الرقم ومن ثم تأكيده"
             };
 
         }
@@ -233,7 +256,7 @@ namespace StarSarcasm.Infrastructure.Services
                 {
                     IsSuccess = false,
                     StatusCode = 400,
-                    Message = "Invalid email!"
+                    Message = "البريد الالكترونى غير صالح"
                 };
             }
 
@@ -244,7 +267,7 @@ namespace StarSarcasm.Infrastructure.Services
                 {
                     IsSuccess = false,
                     StatusCode = 400,
-                    Message = "Failed to remove old password!"
+                    Message = " حدث خطأ يرجى المحاولة مرة اخرى"
                 };
             }
 
@@ -255,7 +278,7 @@ namespace StarSarcasm.Infrastructure.Services
                 {
                     IsSuccess = false,
                     StatusCode = 400,
-                    Message = "Failed to create new password!"
+                    Message = "حدث خطأ يرجى المحاولة مرة اخرى"
                 };
             }
 
@@ -263,7 +286,7 @@ namespace StarSarcasm.Infrastructure.Services
             {
                 IsSuccess = true,
                 StatusCode = 200,
-                Message = "Password changed successfully.",
+                Message = "تم تغيير كلمة السر بنجاح",
             };
         }
 
@@ -299,8 +322,7 @@ namespace StarSarcasm.Infrastructure.Services
         private RefreshToken CreateRefreshToken()
         {
             var randomNumber = new byte[32];
-            using var generator = new RNGCryptoServiceProvider();
-            generator.GetBytes(randomNumber);
+            RandomNumberGenerator.Fill(randomNumber); 
 
             return new RefreshToken
             {
@@ -309,56 +331,70 @@ namespace StarSarcasm.Infrastructure.Services
                 CreatedOn = DateTime.UtcNow
             };
         }
+
         public async Task<ResponseModel> NewRefreshToken(string token)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
-            if (user == null)
+            try
             {
-                return new ResponseModel { IsSuccess = false, Message = "Not Authenticated User", StatusCode = 400 };
-            }
+                var user = await _userManager.Users.FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token));
+                if (user == null)
+                {
+                    return new ResponseModel { IsSuccess = false, Message = "Not Authenticated User", StatusCode = 400 };
+                }
 
-            var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+                var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
 
-            if (!refreshToken.IsActive)
-            {
-                return new ResponseModel
-                {                   
-                    Message = "InActive Token",
-                    StatusCode=400,
-                    Model= new
+                if (!refreshToken.IsActive)
+                {
+                    return new ResponseModel
                     {
-                        IsAuthenticated = false,
-                        UserName = string.Empty,
-                        Roles = new List<string>(),
-                        Token = string.Empty,
-                        RefreshToken = string.Empty,
-                        RefreshTokenExpiration = string.Empty
+                        Message = "InActive Token",
+                        StatusCode = 400,
+                        Model = new
+                        {
+                            IsAuthenticated = false,
+                            UserName = string.Empty,
+                            Roles = new List<string>(),
+                            Token = string.Empty,
+                            RefreshToken = string.Empty,
+                            RefreshTokenExpiration = string.Empty
+                        }
+                    };
+                }
+
+                refreshToken.RevokedOn = DateTime.UtcNow;
+
+                var newRefreshToken = CreateRefreshToken();
+                user.RefreshTokens.Add(newRefreshToken);
+                await _userManager.UpdateAsync(user);
+                var Roles = await _userManager.GetRolesAsync(user);
+                var jwtToken = await GenerateJwtToken(user);
+
+                return new ResponseModel
+                {
+                    Message = "Active Token",
+                    StatusCode = 200,
+                    Model = new
+                    {
+                        IsAuthenticated = true,
+                        UserName = user.UserName,
+                        Roles = Roles.ToList(),
+                        Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                        RefreshToken = newRefreshToken.Token,
+                        RefreshTokenExpiration = newRefreshToken.ExpiresOn
                     }
                 };
             }
-
-            refreshToken.RevokedOn = DateTime.UtcNow;
-
-            var newRefreshToken = CreateRefreshToken();
-            user.RefreshTokens.Add(newRefreshToken);
-            await _userManager.UpdateAsync(user);
-            var Roles = await _userManager.GetRolesAsync(user);
-            var jwtToken = await GenerateJwtToken(user);
-
-            return new ResponseModel
-            {               
-                Message = "Active Token",
-                StatusCode=200,
-                Model=new
+            catch(Exception ex)
+            {
+                return new ResponseModel
                 {
-                    IsAuthenticated = true,
-                    UserName = user.UserName,
-                    Roles = Roles.ToList(),
-                    Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                    RefreshToken = newRefreshToken.Token,
-                    RefreshTokenExpiration = newRefreshToken.ExpiresOn
-                }
-            };
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "حدث خطأ غير متوقع، يرجى المحاولة لاحقًا"
+                };
+
+            }
         }
 
     }
