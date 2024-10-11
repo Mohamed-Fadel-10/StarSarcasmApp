@@ -92,44 +92,52 @@ namespace StarSarcasm.Infrastructure.Services
 			var oneMonthAgo = DateTime.Now.AddMonths(-1);
             Random random = new();
 
-            var drawSubscribers = await _context.UsersDraws.AsNoTracking().Where(u => u.DrawId == drawId
-            && (u.IsWinner == false || u.LastWinDate <= oneMonthAgo)).ToListAsync();
+			var allSubscribers = await _context.UsersDraws
+	            .Where(ud => ud.DrawId == drawId)
+	            .ToListAsync();
 
-            if (drawSubscribers.Any())
+            if (!allSubscribers.Any())
             {
-                var winnerIndex=random.Next(drawSubscribers.Count);
-                var winner = drawSubscribers[winnerIndex];
-                winner.IsWinner= true;
-                winner.LastWinDate=DateTime.Now;
-                _context.UsersDraws.Update(winner);
-                _context.SaveChanges();
-
-                var user = await _context.Users.FindAsync(winner.UserId);
 				return new ResponseModel
-                {
-                    Model = new UserDTO
-                    {
-                        Id=user.Id,
-                        UserName= user.Name,
-                        Email= user.Email,
-                        IsSubscribed=user.IsSubscribed,
-                        FcmToken=user.FcmToken,
-                        Location=user.Location,
-                        BirthDate=user.BirthDate.ToString("yyyy/mm/dd")
-					},
-                    Message = "مبارك للفائز ",
-                    IsSuccess = true,
-                    StatusCode = 200
-                };
+				{
+					Message = "لا يوجد مشاركين في هذا السحب",
+					IsSuccess = false,
+					StatusCode = 404,
+				};
+			}
 
-            }
+            var drawSubscribers = allSubscribers.Where(u => u.IsWinner == false
+                        || u.LastWinDate <= oneMonthAgo).ToList();
 
-            return new ResponseModel
-            {
-                Message = "لا يوجد مشاركين في هذا السحب",
-                IsSuccess = false,
-                StatusCode = 404,
-            };
+			if (!drawSubscribers.Any())
+			{
+                drawSubscribers = allSubscribers;
+			}
+
+			var winnerIndex = random.Next(drawSubscribers.Count);
+			var winner = drawSubscribers[winnerIndex];
+			winner.IsWinner = true;
+			winner.LastWinDate = DateTime.Now;
+			_context.UsersDraws.Update(winner);
+			_context.SaveChanges();
+
+			var user = await _context.Users.FindAsync(winner.UserId);
+			return new ResponseModel
+			{
+				Model = new UserDTO
+				{
+					Id = user.Id,
+					UserName = user.Name,
+					Email = user.Email,
+					IsSubscribed = user.IsSubscribed,
+					FcmToken = user.FcmToken,
+					Location = user.Location,
+					BirthDate = user.BirthDate.ToString("yyyy/mm/dd")
+				},
+				Message = "مبارك للفائز ",
+				IsSuccess = true,
+				StatusCode = 200
+			};
 
         }
 
