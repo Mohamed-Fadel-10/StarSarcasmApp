@@ -438,6 +438,9 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.Property<bool>("IsWinner")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastWinDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");

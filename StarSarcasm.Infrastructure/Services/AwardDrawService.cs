@@ -10,6 +10,7 @@ using StarSarcasm.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -63,7 +64,8 @@ namespace StarSarcasm.Infrastructure.Services
                     Description = dto.Description ?? string.Empty,
                     StartAt = dto.StartAt,
                     EndAt = dto.EndAt,
-                    ImagePath = imagePath
+                    ImagePath = imagePath,
+                    SubscribersNumber=0
                 };
 
                 await _context.Draws.AddAsync(draw);
@@ -85,6 +87,52 @@ namespace StarSarcasm.Infrastructure.Services
         }
 
 
-    }
+		public async Task<ResponseModel> RandomDrawWinner(int drawId)
+        {
+			var oneMonthAgo = DateTime.Now.AddMonths(-1);
+            Random random = new();
+
+            var drawSubscribers = await _context.UsersDraws.AsNoTracking().Where(u => u.DrawId == drawId
+            && (u.IsWinner == false || u.LastWinDate <= oneMonthAgo)).ToListAsync();
+
+            if (drawSubscribers.Any())
+            {
+                var winnerIndex=random.Next(drawSubscribers.Count);
+                var winner = drawSubscribers[winnerIndex];
+                winner.IsWinner= true;
+                winner.LastWinDate=DateTime.Now;
+                _context.UsersDraws.Update(winner);
+                _context.SaveChanges();
+                var user = await _context.Users.FindAsync(winner.UserId);
+
+				return new ResponseModel
+                {
+                    Model = new UserDTO
+                    {
+                        Id=user.Id,
+                        UserName= user.Name,
+                        Email= user.Email,
+                        IsSubscribed=user.IsSubscribed,
+                        FcmToken=user.FcmToken,
+                        Location=user.Location,
+                        BirthDate=user.BirthDate.ToString("yyyy/mm/dd")
+					},
+                    Message = "مبارك للفائز ",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+
+            }
+
+            return new ResponseModel
+            {
+                Message = "لا يوجد مشاركين في هذا السحب",
+                IsSuccess = false,
+                StatusCode = 404,
+            };
+
+        }
+
+	}
 
 }

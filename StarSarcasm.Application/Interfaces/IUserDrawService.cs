@@ -1,4 +1,5 @@
 ﻿using StarSarcasm.Application.DTOs;
+using StarSarcasm.Application.Response;
 using StarSarcasm.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,6 @@ namespace StarSarcasm.Application.Interfaces
     public interface IUserDrawService
     {
         Task<List<UserDrawDTO>> GetAllAsync();
-        Task AddAsync(Draw draw,UserDTO user);
+        Task<ResponseModel> AddAsync(int drawId,string userId);
     }
 }

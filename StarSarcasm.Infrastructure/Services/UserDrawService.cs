@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
+using StarSarcasm.Application.Response;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Infrastructure.Data;
 using System;
@@ -40,16 +41,46 @@ namespace StarSarcasm.Infrastructure.Services
             return dto;
         }
 
-        public async Task AddAsync(Draw draw, UserDTO user)
+        public async Task<ResponseModel> AddAsync(int drawId, string userId)
         {
+            if (!_context.Users.Any(u => u.Id == userId && u.IsSubscribed))
+            {
+				return new ResponseModel
+				{
+					Message = "لا يمكنك الاشتراك في السحب",
+					IsSuccess = false,
+					StatusCode = 400
+				};
+			}
+
+            var draw = _context.Draws.Find(drawId);
+            if (draw == null)
+            {
+                return new ResponseModel
+                {
+                    Message = "هذا السحب غير موجود ولا يمكن الاشتراك به",
+                    IsSuccess = false,
+                    StatusCode = 404
+                };
+            }
+
             var userDraw = new UsersDraws()
             {
-                DrawId = draw.Id,
-                UserId = user.Id,
+                DrawId = drawId,
+                UserId = userId,
             };
-
             await _context.UsersDraws.AddAsync(userDraw);
+
+            draw.SubscribersNumber++;
+            _context.Draws.Update(draw);
+
             await _context.SaveChangesAsync();
+            return new ResponseModel
+            {
+                Message = "تم الاشتراك بنجاح",
+                IsSuccess = true,
+                StatusCode = 200,
+            };
         }
     }
 }

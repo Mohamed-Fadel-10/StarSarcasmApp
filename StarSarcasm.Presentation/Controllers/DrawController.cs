@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
+using StarSarcasm.Domain.Entities;
 
 namespace StarSarcasm.Presentation.Controllers
 {
@@ -38,5 +41,18 @@ namespace StarSarcasm.Presentation.Controllers
             return StatusCode(response.StatusCode, response.Message);
         }
 
-    }
+		//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+		[HttpGet("randomDrawWinner")]
+        public async Task<IActionResult> RandomDrawWinner(int activeDrawId)
+        {
+            var response = await _awardDrawService.RandomDrawWinner(activeDrawId);
+            if (response.IsSuccess)
+            {
+                return StatusCode(response.StatusCode, response.Model);
+            }
+			return StatusCode(response.StatusCode, response.Message);
+
+		}
+
+	}
 }
