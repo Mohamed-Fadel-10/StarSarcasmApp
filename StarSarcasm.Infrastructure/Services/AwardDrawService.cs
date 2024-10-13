@@ -89,55 +89,64 @@ namespace StarSarcasm.Infrastructure.Services
 
 		public async Task<ResponseModel> RandomDrawWinner(int drawId)
         {
-			var oneMonthAgo = DateTime.Now.AddMonths(-1);
-            Random random = new();
-
-			var allSubscribers = await _context.UsersDraws
-	            .Where(ud => ud.DrawId == drawId)
-	            .ToListAsync();
-
-            if (!allSubscribers.Any())
+            try
             {
-				return new ResponseModel
-				{
-					Message = "لا يوجد مشاركين في هذا السحب",
-					IsSuccess = false,
-					StatusCode = 404,
-				};
-			}
 
-            var drawSubscribers = allSubscribers.Where(u => u.IsWinner == false
-                        || u.LastWinDate <= oneMonthAgo).ToList();
+                var oneMonthAgo = DateTime.Now.AddMonths(-1);
+                Random random = new();
 
-			if (!drawSubscribers.Any())
-			{
-                drawSubscribers = allSubscribers;
-			}
+                var allSubscribers = await _context.UsersDraws
+                    .Where(ud => ud.DrawId == drawId)
+                    .ToListAsync();
 
-			var winnerIndex = random.Next(drawSubscribers.Count);
-			var winner = drawSubscribers[winnerIndex];
-			winner.IsWinner = true;
-			winner.LastWinDate = DateTime.Now;
-			_context.UsersDraws.Update(winner);
-			_context.SaveChanges();
+                if (!allSubscribers.Any())
+                {
+                    return new ResponseModel
+                    {
+                        Message = "لا يوجد مشاركين في هذا السحب",
+                        IsSuccess = false,
+                        StatusCode = 404,
+                    };
+                }
 
-			var user = await _context.Users.FindAsync(winner.UserId);
-			return new ResponseModel
-			{
-				Model = new UserDTO
-				{
-					Id = user.Id,
-					UserName = user.Name,
-					Email = user.Email,
-					IsSubscribed = user.IsSubscribed,
-					FcmToken = user.FcmToken,
-					Location = user.Location,
-					BirthDate = user.BirthDate.ToString("yyyy/mm/dd")
-				},
-				Message = "مبارك للفائز ",
-				IsSuccess = true,
-				StatusCode = 200
-			};
+                var drawSubscribers = allSubscribers.Where(u => u.IsWinner == false
+                            || u.LastWinDate <= oneMonthAgo).ToList();
+
+                if (!drawSubscribers.Any())
+                {
+                    drawSubscribers = allSubscribers;
+                }
+
+                var winnerIndex = random.Next(drawSubscribers.Count);
+                var winner = drawSubscribers[winnerIndex];
+                winner.IsWinner = true;
+                winner.LastWinDate = DateTime.Now;
+                _context.UsersDraws.Update(winner);
+                _context.SaveChanges();
+
+                var user = await _context.Users.FindAsync(winner.UserId);
+                return new ResponseModel
+                {
+                    Model = new UserDTO
+                    {
+                        Id = user.Id,
+                        UserName = user.Name,
+                        Email = user.Email,
+                        IsSubscribed = user.IsSubscribed,
+                        FcmToken = user.FcmToken,
+                        Location = user.Location,
+                        BirthDate = user.BirthDate.ToString("yyyy/mm/dd")
+                    },
+                    Message = "مبارك للفائز ",
+                    IsSuccess = true,
+                    StatusCode = 200
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel { IsSuccess = false, Message = "حدث خطأ غير متوقع يرجى اعادة المحاولة", StatusCode = 500 };
+
+            }
 
         }
 

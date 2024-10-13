@@ -45,14 +45,43 @@ namespace StarSarcasm.Infrastructure.Services
         {
             try
             {
-                var user = _context.Users.Any(u => u.Id == userId && u.IsSubscribed);
-                if (!user)
+                var isInDraw = _context.UsersDraws.Any(ud => ud.DrawId == drawId && ud.UserId == userId);
+                if (isInDraw)
                 {
                     return new ResponseModel
                     {
-                        Message = "لا يمكنك الاشتراك في السحب",
+                        Message = "أنت بالفعل مشترك في هذا السحب",
                         IsSuccess = false,
-                        StatusCode = 400
+                        StatusCode = 400,
+                        Model = new
+                        {
+                            IsDrawSubscribed = true,
+                        }
+                    };
+                }
+
+                var user = await _context.Users.FindAsync(userId);
+                if(user == null)
+                {
+                    return new ResponseModel
+                    {
+                        Message = "حدث خطأ، مستخدم غير موجود",
+                        IsSuccess = false,
+                        StatusCode = 404,
+                    };
+                }
+
+                if (!user.IsSubscribed)
+                {
+                    return new ResponseModel
+                    {
+                        Message = "لا يمكنك الاشتراك في السحب لانك غير مشترك في الخدمة",
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Model = new
+                        {
+                            IsSubscribed=false,
+                        }
                     };
                 }
 

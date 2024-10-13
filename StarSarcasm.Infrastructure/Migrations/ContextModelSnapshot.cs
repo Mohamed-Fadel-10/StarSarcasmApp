@@ -241,6 +241,72 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.Chat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Chat");
+                });
+
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.ChatMessages", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsModified")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReaded")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SendAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("StarSarcasm.Domain.Entities.Draw", b =>
                 {
                     b.Property<int>("Id")
@@ -424,6 +490,30 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.ToTable("Subscriptions");
                 });
 
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.UsersChats", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UsersChats");
+                });
+
             modelBuilder.Entity("StarSarcasm.Domain.Entities.UsersDraws", b =>
                 {
                     b.Property<int>("Id")
@@ -569,6 +659,25 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.ChatMessages", b =>
+                {
+                    b.HasOne("StarSarcasm.Domain.Entities.Chat", "Chat")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("ChatMessages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("StarSarcasm.Domain.Entities.Notification", b =>
                 {
                     b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "User")
@@ -598,6 +707,25 @@ namespace StarSarcasm.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.UsersChats", b =>
+                {
+                    b.HasOne("StarSarcasm.Domain.Entities.Chat", "Chat")
+                        .WithMany("UsersChats")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("UsersChats")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
 
                     b.Navigation("User");
                 });
@@ -642,15 +770,26 @@ namespace StarSarcasm.Infrastructure.Migrations
 
             modelBuilder.Entity("StarSarcasm.Domain.Entities.ApplicationUser", b =>
                 {
+                    b.Navigation("ChatMessages");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("Payments");
 
                     b.Navigation("Subscriptions");
 
+                    b.Navigation("UsersChats");
+
                     b.Navigation("UsersDraws");
 
                     b.Navigation("UsersMessages");
+                });
+
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.Chat", b =>
+                {
+                    b.Navigation("ChatMessages");
+
+                    b.Navigation("UsersChats");
                 });
 
             modelBuilder.Entity("StarSarcasm.Domain.Entities.Draw", b =>
