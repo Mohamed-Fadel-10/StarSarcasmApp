@@ -142,7 +142,7 @@ namespace StarSarcasm.Infrastructure.Services
                                 IsSubscribed = user.IsSubscribed,
                                 FcmToken = user.FcmToken,
                                 Location = user.Location,
-                                BirthDate = user.BirthDate.ToString("yyyy-mm-dd")
+                                BirthDate = user.BirthDate.ToString("yyyy-MM-dd")
                             };
                             users.Add(dto);
                         }
