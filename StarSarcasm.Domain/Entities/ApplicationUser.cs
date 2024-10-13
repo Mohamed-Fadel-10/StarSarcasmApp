@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StarSarcasm.Domain.Entities
 {
@@ -12,6 +13,8 @@ namespace StarSarcasm.Domain.Entities
         public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
 
         public string Location { get; set; }
+        [ForeignKey("Zodiac")]
+        public int ZodiacId { get; set; }
 
         public virtual ICollection<UsersDraws>? UsersDraws { get; set; } = new List<UsersDraws>();
         public virtual ICollection<UsersMessages>? UsersMessages { get; set; } = new List<UsersMessages>();
@@ -19,6 +22,9 @@ namespace StarSarcasm.Domain.Entities
         public virtual ICollection<Subscription>? Subscriptions { get; set; } = new List<Subscription>();
         public virtual ICollection<Payment>? Payments { get; set; } = new List<Payment>();
         public virtual ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
+        public virtual ICollection<ChatMessages>? ChatMessages   { get; set; }= new List<ChatMessages>();
+        public virtual ICollection<UsersChats>? UsersChats { get; set; }=new List<UsersChats>();
+        public virtual Zodiac Zodiac { get; set; }
 
     }
 }

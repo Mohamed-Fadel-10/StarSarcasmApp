@@ -16,8 +16,8 @@ namespace StarSarcasm.Presentation.Controllers
 			_userDrawService = userDrawService;
 		}
 
-		[HttpPost("addUserDraw")]
-		public async Task<IActionResult> AddUserDraw(int drawId,string userId)
+		[HttpPost("SubscribeToDraw")]
+		public async Task<IActionResult> SubscribeToDraw(int drawId,string userId)
 		{
 			var response = await _userDrawService.AddAsync(drawId, userId);
 			if (response.IsSuccess)

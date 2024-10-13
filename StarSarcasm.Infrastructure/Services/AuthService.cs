@@ -314,7 +314,7 @@ namespace StarSarcasm.Infrastructure.Services
                 audience: _configuration["JWT:audience"],
                 claims: claims,
                 signingCredentials: signingCred,
-                expires: DateTime.UtcNow.AddHours(3)
+                expires: DateTime.UtcNow.AddDays(1)
                 );
             return Token;
         }
@@ -327,7 +327,7 @@ namespace StarSarcasm.Infrastructure.Services
             return new RefreshToken
             {
                 Token = Convert.ToBase64String(randomNumber),
-                ExpiresOn = DateTime.UtcNow.AddDays(8),
+                ExpiresOn = DateTime.UtcNow.AddDays(10),
                 CreatedOn = DateTime.UtcNow
             };
         }

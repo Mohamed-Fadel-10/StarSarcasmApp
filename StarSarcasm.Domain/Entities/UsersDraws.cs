@@ -12,8 +12,9 @@ namespace StarSarcasm.Domain.Entities
     {
         [Key]
         public int Id { get; set; }
-        public bool IsWinner { get; set; }
         public DateTime? LastWinDate { get; set; }
+
+        public bool IsWinner { get; set; }
 
         public string UserId { get; set; }
         public int DrawId { get; set; }

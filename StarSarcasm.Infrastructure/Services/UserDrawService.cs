@@ -43,44 +43,52 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task<ResponseModel> AddAsync(int drawId, string userId)
         {
-            if (!_context.Users.Any(u => u.Id == userId && u.IsSubscribed))
+            try
             {
-				return new ResponseModel
-				{
-					Message = "لا يمكنك الاشتراك في السحب",
-					IsSuccess = false,
-					StatusCode = 400
-				};
-			}
+                var user = _context.Users.Any(u => u.Id == userId && u.IsSubscribed);
+                if (!user)
+                {
+                    return new ResponseModel
+                    {
+                        Message = "لا يمكنك الاشتراك في السحب",
+                        IsSuccess = false,
+                        StatusCode = 400
+                    };
+                }
 
-            var draw = _context.Draws.Find(drawId);
-            if (draw == null)
-            {
+                var draw = _context.Draws.Find(drawId);
+                if (draw == null)
+                {
+                    return new ResponseModel
+                    {
+                        Message = "هذا السحب غير موجود ولا يمكن الاشتراك به",
+                        IsSuccess = false,
+                        StatusCode = 404
+                    };
+                }
+
+                var userDraw = new UsersDraws()
+                {
+                    DrawId = drawId,
+                    UserId = userId,
+                };
+                await _context.UsersDraws.AddAsync(userDraw);
+
+                draw.SubscribersNumber++;
+                _context.Draws.Update(draw);
+
+                await _context.SaveChangesAsync();
                 return new ResponseModel
                 {
-                    Message = "هذا السحب غير موجود ولا يمكن الاشتراك به",
-                    IsSuccess = false,
-                    StatusCode = 404
+                    Message = "تم الاشتراك بنجاح",
+                    IsSuccess = true,
+                    StatusCode = 200,
                 };
             }
+            catch (Exception ex) {
 
-            var userDraw = new UsersDraws()
-            {
-                DrawId = drawId,
-                UserId = userId,
-            };
-            await _context.UsersDraws.AddAsync(userDraw);
-
-            draw.SubscribersNumber++;
-            _context.Draws.Update(draw);
-
-            await _context.SaveChangesAsync();
-            return new ResponseModel
-            {
-                Message = "تم الاشتراك بنجاح",
-                IsSuccess = true,
-                StatusCode = 200,
-            };
+                return new ResponseModel { IsSuccess = false, Message = "حدث خطأ غير متوقع يرجى اعادة المحاولة", StatusCode = 500 };
+            }
         }
     }
 }
