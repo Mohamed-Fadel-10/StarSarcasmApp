@@ -11,6 +11,7 @@ using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.Email;
 using StarSarcasm.Infrastructure.BackgroundJobs;
 using StarSarcasm.Infrastructure.Data;
+using StarSarcasm.Infrastructure.Hubs;
 using StarSarcasm.Infrastructure.Services;
 using StarSarcasm.Infrastructure.Services.FileUploadService;
 using StarSarcasm.Infrastructure.Services.SMSServices;
@@ -108,6 +109,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // inject services 
+builder.Services.AddSignalR(o =>
+{
+    o.EnableDetailedErrors = true;
+});
 builder.Services.AddTransient<IOTPService, OTPService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -116,6 +121,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserDrawService, UserDrawService>();
 builder.Services.AddScoped<IAwardDrawService,AwardDrawService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 
 
 builder.Services.AddDbContext<Context>(options =>
@@ -124,13 +130,15 @@ builder.Services.AddDbContext<Context>(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy( policy =>
-        {
-            policy.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-        });
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://127.0.0.1:5500")  
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); 
+    });
 });
+
 
 var app = builder.Build();
 
@@ -159,6 +167,7 @@ using (var scope = app.Services.CreateScope())
     userCleanUpScheduler.UserCleanUp();
 }
 app.UseCors();
+app.MapHub<ChatHub>("/ChatHub");
 app.MapControllers();
 
 app.Run();

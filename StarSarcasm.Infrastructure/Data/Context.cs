@@ -54,6 +54,44 @@ namespace StarSarcasm.Infrastructure.Data
                 .HasForeignKey(um => um.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+
+
+            builder.Entity<ChatMessages>()
+           .HasOne(c => c.Sender)
+           .WithMany(u => u.SentMessages)
+           .HasForeignKey(c => c.SenderId)
+           .OnDelete(DeleteBehavior.NoAction);
+
+            // Configuring the relationship between ApplicationUser and ChatMessages (Received Messages)
+            builder.Entity<ChatMessages>()
+                .HasOne(c => c.Reciver)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(c => c.ReciverId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<ChatMessages>()
+                .HasOne(c => c.Chat)
+                .WithMany(c => c.ChatMessages)
+                .HasForeignKey(c => c.ChatId);
+
+            builder.Entity<UsersChats>()
+        .HasOne(uc => uc.Sender)
+        .WithMany(au => au.SentChats)
+        .HasForeignKey(uc => uc.User1)
+        .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UsersChats>()
+                .HasOne(uc => uc.Receiver)
+                .WithMany(au => au.ReceivedChats)
+                .HasForeignKey(uc => uc.User2)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<UsersChats>()
+                .HasOne(uc => uc.Chat)
+                .WithMany(c => c.UsersChats)
+                .HasForeignKey(uc => uc.ChatId);
+
+
             base.OnModelCreating(builder);
 
         }
@@ -68,5 +106,8 @@ namespace StarSarcasm.Infrastructure.Data
         public DbSet<UsersDraws> UsersDraws { get; set; }
         public DbSet<UsersMessages> UsersMessages { get; set; }
         public DbSet<OTP> OTP { get; set; }
+        public DbSet<Chat> Chat { get; set; }
+        public DbSet<UsersChats> UsersChats { get; set; }
+        public DbSet<ChatMessages> ChatMessages { get; set; }
     }
 }

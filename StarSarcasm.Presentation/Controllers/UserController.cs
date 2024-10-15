@@ -17,7 +17,7 @@ namespace StarSarcasm.Presentation.Controllers
             _userService = userService;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+       // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
         {
