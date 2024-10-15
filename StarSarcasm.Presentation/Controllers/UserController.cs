@@ -30,6 +30,18 @@ namespace StarSarcasm.Presentation.Controllers
             return StatusCode(StatusCodes.Status200OK, response);
         }
 
+        [HttpGet("GetAllInZodiac")]
+        public async Task<IActionResult> GetAllInZodiac(int zodiacNum)
+        {
+            var response = await _userService.UsersWithZodiac(zodiacNum);
+            if (response.IsSuccess)
+            {
+                return StatusCode(response.StatusCode,response.Model);
+
+            }
+            return StatusCode(response.StatusCode,response.Message);
+        }
+
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("profile")]
         public async Task<IActionResult> Profile(string id)

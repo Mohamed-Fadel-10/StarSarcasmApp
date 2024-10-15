@@ -739,6 +739,25 @@ namespace StarSarcasm.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "User")
+                        .WithMany("UsersChats")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.UsersChats", b =>
+                {
+                    b.HasOne("StarSarcasm.Domain.Entities.Chat", "Chat")
+                        .WithMany("UsersChats")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "Sender")
                         .WithMany("SentChats")
                         .HasForeignKey("User1")
@@ -798,6 +817,8 @@ namespace StarSarcasm.Infrastructure.Migrations
 
             modelBuilder.Entity("StarSarcasm.Domain.Entities.ApplicationUser", b =>
                 {
+                    b.Navigation("ChatMessages");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("Payments");
@@ -811,6 +832,8 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.Navigation("SentMessages");
 
                     b.Navigation("Subscriptions");
+
+                    b.Navigation("UsersChats");
 
                     b.Navigation("UsersDraws");
 

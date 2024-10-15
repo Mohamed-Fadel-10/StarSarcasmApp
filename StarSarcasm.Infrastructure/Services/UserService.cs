@@ -120,5 +120,64 @@ namespace StarSarcasm.Infrastructure.Services
             };
 
         }
+
+
+        public async Task<ResponseModel> UsersWithZodiac(int zodiacNum)
+        {
+            List<UserDTO> users = new();
+            try
+            {
+                var zodiacUsers = await _context.Users.ToListAsync();
+                if (zodiacUsers.Count > 0)
+                {
+                    foreach (var user in zodiacUsers)
+                    {
+                        if (user.BirthDate.Day == zodiacNum)
+                        {
+                            var dto = new UserDTO
+                            {
+                                Id = user.Id,
+                                UserName = user.Name,
+                                Email = user.Email,
+                                IsSubscribed = user.IsSubscribed,
+                                FcmToken = user.FcmToken,
+                                Location = user.Location,
+                                BirthDate = user.BirthDate.ToString("yyyy-MM-dd")
+                            };
+                            users.Add(dto);
+                        }
+                    }
+
+                    if (users.Count > 0)
+                    {
+                        return new ResponseModel
+                        {
+                            IsSuccess = true,
+                            StatusCode = 200,
+                            Model = users
+                        };
+                    }
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "لا يوجد مستخدمين بهذا البرج"
+                    };
+                }
+
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "لا يوجد مستخدمين!"
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel { IsSuccess = false, Message = "حدث خطأ غير متوقع يرجى اعادة المحاولة", StatusCode = 500 };
+            }
+
+        }
     }
 }

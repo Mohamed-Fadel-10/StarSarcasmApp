@@ -15,5 +15,6 @@ namespace StarSarcasm.Application.Interfaces
         public  Task<List<UserDTO>> GetAllSubscribers();
         public Task<ResponseModel> Profile(string id);
         public Task<ResponseModel> RemoveUser(string id);
+        public Task<ResponseModel> UsersWithZodiac(int zodiacNum);
     }
 }
