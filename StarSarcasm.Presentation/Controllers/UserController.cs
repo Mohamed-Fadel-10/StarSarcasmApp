@@ -30,8 +30,8 @@ namespace StarSarcasm.Presentation.Controllers
             return StatusCode(StatusCodes.Status200OK, response);
         }
 
-        [HttpGet("GetAllInZodiac")]
-        public async Task<IActionResult> GetAllInZodiac(int zodiacNum)
+        [HttpGet("UsersInZodiac")]
+        public async Task<IActionResult> UsersInZodiac(int zodiacNum)
         {
             var response = await _userService.UsersWithZodiac(zodiacNum);
             if (response.IsSuccess)

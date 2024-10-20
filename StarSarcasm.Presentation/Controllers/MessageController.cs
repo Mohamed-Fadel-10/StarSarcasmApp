@@ -27,17 +27,8 @@ namespace StarSarcasm.Presentation.Controllers
             {
                 return Ok(Response);
             }
-            return NotFound("No Messages Until Now For This User");
+            return NotFound("لا توجد لديك رسائل حاليا");
         }
-        [HttpGet("GetMessagesForChat")]
-        public async Task<IActionResult> GetMessagesForChat(int chatId)
-        {
-            var response = await _messageService.GetMessagesForChat(chatId);
-            if (response.IsSuccess)
-            {
-                return StatusCode(response.StatusCode, response.Model);
-            }
-            return StatusCode(response.StatusCode, response.Message);
-        }
+      
     }
 }

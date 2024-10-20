@@ -161,7 +161,7 @@ namespace StarSarcasm.Infrastructure.Services
                     {
                         UserId = user.Id,
                         IsSubscribed = user.IsSubscribed,
-                        Email = user.Email,
+                        UserName = user.UserName,
                         Location = user.Location,
                         BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
                         Token = new JwtSecurityTokenHandler().WriteToken(token),

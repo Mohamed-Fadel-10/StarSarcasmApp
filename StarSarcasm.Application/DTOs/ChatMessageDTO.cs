@@ -14,5 +14,6 @@ namespace StarSarcasm.Application.DTOs
         public string SenderId { get; set; }
         public string ReciverId { get; set; }
         public int ChatId { get; set; }
+        
     }
 }

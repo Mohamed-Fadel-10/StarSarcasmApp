@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Response;
 using StarSarcasm.Infrastructure.Data;
@@ -19,14 +20,14 @@ namespace StarSarcasm.Infrastructure.Services
         }
         public async Task<ResponseModel> GetUserChats(string id)
         {
-            var chats = await _context.UsersChats.Join(_context.Chat,
-                uc => uc.ChatId,
-                c => c.Id,
-                (uc, c) => new { UsersChate = uc, Chat = c })
-                .Where(u=>(u.UsersChate.User1==id)|| (u.UsersChate.User2 == id))
-                .Select(c => c.Chat)
+            var chats = await _context.UsersChats
+                .Include(uc => uc.Chat)
+                .Include(uc => uc.Sender) 
+                .Include(uc => uc.Receiver) 
+                .Where(uc => uc.User1 == id || uc.User2 == id)
                 .ToListAsync();
-            if(chats.Count == 0)
+
+            if (chats.Count == 0)
             {
                 return new ResponseModel
                 {
@@ -35,13 +36,34 @@ namespace StarSarcasm.Infrastructure.Services
                     IsSuccess = false,
                 };
             }
+
+            var chatsDTO = new List<ChatDTO>();
+            foreach (var chat in chats)
+            {
+                var receiver = chat.User1 == id ? chat.Receiver : chat.Sender;
+
+                var item = new ChatDTO
+                {
+                    ChatName = chat.Chat.Name,
+                    ChatId = chat.Chat.Id,
+                    ReceiverId = receiver?.Id,
+                    CreatedAt = chat.Chat.CreatedAt,
+                    ReceiverDate = (DateTime)(receiver?.BirthDate),
+                    FcmToken=receiver.FcmToken,
+                };
+
+                chatsDTO.Add(item);
+            }
+
             return new ResponseModel
             {
                 StatusCode = 200,
                 Message = "Done",
                 IsSuccess = true,
-                Model=chats
+                Model = chatsDTO
             };
         }
+
+
     }
 }

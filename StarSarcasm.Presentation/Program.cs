@@ -122,6 +122,7 @@ builder.Services.AddScoped<IUserDrawService, UserDrawService>();
 builder.Services.AddScoped<IAwardDrawService,AwardDrawService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 
 
 builder.Services.AddDbContext<Context>(options =>
@@ -132,12 +133,23 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://127.0.0.1:5500")  
+        policy.WithOrigins("http://127.0.0.1:5500")
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials(); 
+              .AllowCredentials();
     });
 });
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddDefaultPolicy(policy =>
+//    {
+//        policy.AllowAnyOrigin()
+//              .AllowAnyMethod()
+//              .AllowAnyHeader();
+//    });
+//});
+
 
 
 var app = builder.Build();

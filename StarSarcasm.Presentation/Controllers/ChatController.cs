@@ -14,10 +14,10 @@ namespace StarSarcasm.Presentation.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<IActionResult> GetUserChats(string id)
+        [HttpGet("GetUserChats")]
+        public async Task<IActionResult> GetUserChats(string userId)
         {
-            var response=await _chatService.GetUserChats(id);
+            var response=await _chatService.GetUserChats(userId);
             if (response.IsSuccess)
             {
                 return StatusCode(response.StatusCode, response.Model);

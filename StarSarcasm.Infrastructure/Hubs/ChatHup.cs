@@ -15,6 +15,8 @@ namespace StarSarcasm.Infrastructure.Hubs
     {
         private readonly Context _context;
 
+        private static Dictionary<string, string> connectedUsers = new Dictionary<string, string>();
+
         public ChatHub(Context context)
         {
             _context = context;
@@ -22,26 +24,51 @@ namespace StarSarcasm.Infrastructure.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            Console.WriteLine($"User connected: {Context.ConnectionId}");
+            var userId = Context.GetHttpContext().Request.Query["userId"].ToString();
+            var connectionId = Context.ConnectionId;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                if (!connectedUsers.ContainsKey(userId))
+                {
+                    connectedUsers.Add(userId, connectionId);
+                }
+                else
+                {
+                    connectedUsers[userId] = connectionId;
+                }
+
+               // Console.WriteLine($"User {userId} connected with connection ID: {connectionId}");
+               // await Clients.Caller.SendAsync("ReceiveMessage", "System", $"You are connected as {userId}");
+
+                var unreadMessages = await _context.ChatMessages
+                    .Where(m => m.ReciverId == userId && !m.IsReaded)
+                    .ToListAsync();
+
+                foreach (var unreadMessage in unreadMessages)
+                {
+                    await Clients.Caller.SendAsync("ReceiveMessage", unreadMessage.SenderId, unreadMessage.Content,unreadMessage.SendAt);
+                    unreadMessage.IsReaded = true;
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Console.WriteLine($"User disconnected: {Context.ConnectionId}");
+            var connectionId = Context.ConnectionId;
+            var userId = connectedUsers.FirstOrDefault(x => x.Value == connectionId).Key;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                connectedUsers.Remove(userId); 
+                Console.WriteLine($"User {userId} disconnected.");
+            }
+
             await base.OnDisconnectedAsync(exception);
-        }
-
-        public async Task JoinChat(string chatId)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
-            Console.WriteLine($"User {Context.ConnectionId} joined chat group {chatId}");
-        }
-
-        public async Task LeaveChat(string chatId)
-        {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId);
-            Console.WriteLine($"User {Context.ConnectionId} left chat group {chatId}");
         }
 
         public async Task SendMessage(SendMessageDTO model)
@@ -60,7 +87,6 @@ namespace StarSarcasm.Infrastructure.Hubs
             if (chat == null)
             {
                 var reciverName = await _context.Users.FirstOrDefaultAsync(u => u.Id == model.ReciverId);
-
                 chat = new Chat
                 {
                     Name = reciverName.Name,
@@ -100,8 +126,11 @@ namespace StarSarcasm.Infrastructure.Hubs
                 await _context.ChatMessages.AddAsync(message);
                 await _context.SaveChangesAsync();
 
-                var groupName = chat.Id.ToString();  
-                await Clients.Group(groupName).SendAsync("ReceiveMessage", message.Content);
+                if (connectedUsers.ContainsKey(model.ReciverId))
+                {
+                    var receiverConnectionId = connectedUsers[model.ReciverId];
+                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", model.SenderId, model.Content,message.SendAt);
+                }
             }
             catch (Exception ex)
             {
