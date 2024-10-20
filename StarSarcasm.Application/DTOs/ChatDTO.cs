@@ -8,7 +8,7 @@ namespace StarSarcasm.Application.DTOs
 {
     public class ChatDTO
     {
-        public int ChatId { get; set; }
+        public string ChatId { get; set; }
         public string ChatName { get; set; }
         public DateTime ReceiverDate { get; set; }
         public DateTime CreatedAt { get; set; }

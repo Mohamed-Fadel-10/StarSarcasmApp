@@ -15,7 +15,7 @@ namespace StarSarcasm.Application.Interfaces
         public  Task SendMessagesToSubscribedUsers();
         public  Task SendMessagesToUnSubscribedUsers();
         public Task<List<MessageDTO>> GetUserMessages(string id);
-        public Task<ResponseModel> GetMessagesForChat(int chatId);
+         public Task<ResponseModel> GetMessagesForChat(string chatId);
 
 
     }

@@ -100,10 +100,10 @@ namespace StarSarcasm.Infrastructure.Services
             return userMessages.Any() ? userMessages : new List<MessageDTO>();
         }
 
-        public async Task<ResponseModel> GetMessagesForChat(int chatId)
+        public async Task<ResponseModel> GetMessagesForChat(string chatId)
         {
-            var messages= await _context.ChatMessages
-                .Where(c=>c.ChatId==chatId)
+            var messages = await _context.ChatMessages
+                .Where(c => c.ChatId == chatId)
                 .ToListAsync();
             var chatMessages = new List<ChatMessageDTO>();
 
@@ -121,7 +121,7 @@ namespace StarSarcasm.Infrastructure.Services
                 chatMessages.Add(Message);
             }
             return messages.Any() ? new ResponseModel { IsSuccess = true, StatusCode = 200, Model = chatMessages } :
-                new ResponseModel { IsSuccess = false, StatusCode = 404, Message="No Messages For This Chat" };
+                new ResponseModel { IsSuccess = false, StatusCode = 404, Message = "No Messages For This Chat" };
         }
 
     }

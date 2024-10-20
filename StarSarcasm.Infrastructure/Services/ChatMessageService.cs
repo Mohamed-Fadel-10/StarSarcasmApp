@@ -18,7 +18,7 @@ namespace StarSarcasm.Infrastructure.Services
         {
               _context = context;
         }
-        public async Task<ResponseModel> GetMessagesForChat(int chatId)
+        public async Task<ResponseModel> GetMessagesForChat(string chatId)
         {
             var messages = await _context.ChatMessages
                 .Where(c => c.ChatId == chatId)

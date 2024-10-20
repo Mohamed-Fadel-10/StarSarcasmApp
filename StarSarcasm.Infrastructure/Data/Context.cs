@@ -55,6 +55,10 @@ namespace StarSarcasm.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
 
+            builder.Entity<Chat>()
+               .Property(c => c.Id)
+               .ValueGeneratedNever();
+
 
             builder.Entity<ChatMessages>()
            .HasOne(c => c.Sender)

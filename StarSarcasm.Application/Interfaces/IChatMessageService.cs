@@ -9,6 +9,6 @@ namespace StarSarcasm.Application.Interfaces
 {
     public interface IChatMessageService
     {
-        public Task<ResponseModel> GetMessagesForChat(int chatId);
+        public Task<ResponseModel> GetMessagesForChat(string chatId);
     }
 }

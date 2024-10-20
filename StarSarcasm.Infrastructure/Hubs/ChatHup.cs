@@ -89,6 +89,7 @@ namespace StarSarcasm.Infrastructure.Hubs
                 var reciverName = await _context.Users.FirstOrDefaultAsync(u => u.Id == model.ReciverId);
                 chat = new Chat
                 {
+                   Id = $"{model.SenderId}-{model.ReciverId}",
                     Name = reciverName.Name,
                     CreatedAt = DateTime.Now,
                     IsDeleted = false,

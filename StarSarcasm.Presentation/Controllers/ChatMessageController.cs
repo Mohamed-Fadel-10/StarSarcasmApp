@@ -17,7 +17,7 @@ namespace StarSarcasm.Presentation.Controllers
         }
 
         [HttpGet("GetMessagesForChat")]
-        public async Task<IActionResult> GetMessagesForChat(int chatId)
+        public async Task<IActionResult> GetMessagesForChat(string chatId)
         {
             var response = await _chatMessageService.GetMessagesForChat(chatId);
             if (response.IsSuccess)

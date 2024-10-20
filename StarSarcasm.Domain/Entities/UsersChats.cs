@@ -18,7 +18,7 @@ namespace StarSarcasm.Domain.Entities
         public string User2 { get; set; }
         [ForeignKey("Chat")]
 
-        public int ChatId { get; set; }
+        public string ChatId { get; set; }
         public ApplicationUser Sender { get; set; } // Sender
         public ApplicationUser Receiver { get; set; } // Receiver
         public Chat Chat { get; set; }

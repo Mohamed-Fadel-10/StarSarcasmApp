@@ -13,7 +13,7 @@ namespace StarSarcasm.Application.DTOs
         public DateTime SendAt { get; set; }
         public string SenderId { get; set; }
         public string ReciverId { get; set; }
-        public int ChatId { get; set; }
+        public string ChatId { get; set; }
         
     }
 }
