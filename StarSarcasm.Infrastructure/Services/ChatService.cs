@@ -37,19 +37,19 @@ namespace StarSarcasm.Infrastructure.Services
                 };
             }
 
-            var chatsDTO = new List<ChatDTO>();
+            var chatsDTO = new List<UserChatDTO>();
             foreach (var chat in chats)
             {
                 var receiver = chat.User1 == id ? chat.Receiver : chat.Sender;
 
-                var item = new ChatDTO
+                var item = new UserChatDTO
                 {
-                    ChatName = chat.Chat.Name,
                     ChatId = chat.Chat.Id,
-                    ReceiverId = receiver?.Id,
-                    CreatedAt = chat.Chat.CreatedAt,
+                    ChatName = chat.Chat.Name,
                     ReceiverDate = (DateTime)(receiver?.BirthDate),
-                    FcmToken=receiver.FcmToken,
+                    ReceiverId = receiver?.Id,
+                    FcmToken =receiver.FcmToken,
+                    Location=receiver.Location,
                 };
 
                 chatsDTO.Add(item);

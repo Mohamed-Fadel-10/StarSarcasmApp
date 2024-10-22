@@ -2,6 +2,7 @@
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Response;
+using StarSarcasm.Domain.Enums;
 using StarSarcasm.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,7 @@ namespace StarSarcasm.Infrastructure.Services
                     ReciverId = message.ReciverId,
                     SendAt = message.SendAt,
                     SenderId = message.SenderId,
+                    Type= (int)message.Type,
                 };
                 chatMessages.Add(Message);
             }

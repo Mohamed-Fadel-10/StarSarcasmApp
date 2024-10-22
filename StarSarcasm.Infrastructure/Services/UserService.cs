@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Twilio.TwiML.Fax;
 
 namespace StarSarcasm.Infrastructure.Services
 {
@@ -124,7 +125,7 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task<ResponseModel> UsersWithZodiac(int zodiacNum)
         {
-            List<UserDTO> users = new();
+            List<UserChatDTO> users = new();
             try
             {
                 var zodiacUsers = await _context.Users.ToListAsync();
@@ -134,15 +135,14 @@ namespace StarSarcasm.Infrastructure.Services
                     {
                         if (user.BirthDate.Day == zodiacNum)
                         {
-                            var dto = new UserDTO
+                            var dto = new UserChatDTO
                             {
-                                Id = user.Id,
-                                UserName = user.Name,
-                                Email = user.Email,
-                                IsSubscribed = user.IsSubscribed,
+                                ChatId = null,
+                                ChatName = user.UserName,
+                                ReceiverDate = user.BirthDate,
+                                ReceiverId =user.Id,
                                 FcmToken = user.FcmToken,
-                                Location = user.Location,
-                                BirthDate = user.BirthDate.ToString("yyyy-MM-dd")
+                                Location = user.Location
                             };
                             users.Add(dto);
                         }

@@ -2,6 +2,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StarSarcasm.Application.Interfaces;
@@ -112,6 +113,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddSignalR(o =>
 {
     o.EnableDetailedErrors = true;
+    o.MaximumReceiveMessageSize = 102400;
 });
 builder.Services.AddTransient<IOTPService, OTPService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
