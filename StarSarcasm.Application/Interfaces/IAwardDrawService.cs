@@ -15,5 +15,7 @@ namespace StarSarcasm.Application.Interfaces
         public Task<ResponseModel> GetActiveDrawAsync();
         public Task<ResponseModel> AddAsync(DrawDTO dto);
         public Task<ResponseModel> RandomDrawWinner(int drawId);
-    }
+        public Task<ResponseModel> UpdateAsync(int id, DrawDTO dto);
+        public Task<ResponseModel> DeleteAsync(int id);
+	}
 }

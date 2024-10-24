@@ -150,6 +150,116 @@ namespace StarSarcasm.Infrastructure.Services
 
         }
 
+		public async Task<ResponseModel> UpdateAsync(int id,DrawDTO dto)
+        {
+            try
+            {
+                var draw = await _context.Draws.FindAsync(id);
+                if( draw == null)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "هذا السحب غير موجود",
+                    };
+                }
+
+				string filename = string.Empty;
+				if (dto.file != null)
+				{
+					filename = await _fileUpload.SaveFileAsync(dto.file);
+				}
+				string imagePath = string.IsNullOrEmpty(filename) ? null : _fileUpload.GetFilePath(filename);
+
+				var newDraw = new Draw
+                {
+                    Id = draw.Id,
+                    Name = dto.Name,
+                    Description = dto.Description,
+                    StartAt = dto.StartAt,
+                    EndAt = dto.EndAt,
+                    ImagePath = imagePath,
+                };
+
+                _context.Entry(draw).CurrentValues.SetValues(newDraw);
+                var result = _context.Entry(draw);
+                if (result.State == EntityState.Modified)
+                {
+                    await _context.SaveChangesAsync();
+                    return new ResponseModel
+                    {
+                        IsSuccess = true,
+                        StatusCode = 200,
+                        Model = draw,
+						Message = "تم التعديل بنجاح",
+					};
+                }
+
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "حدث خطأ اثناء تعديل السحب",
+                };
+            }
+            catch
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "حدث خطأ اثناء تعديل السحب",
+                };
+            }
+        }
+
+		public async Task<ResponseModel> DeleteAsync(int id)
+        {
+            try
+            {
+                var draw = await _context.Draws.FindAsync(id);
+                if (draw != null)
+                {
+                    _context.Draws.Remove(draw);
+                    var result = _context.Entry(draw);
+                    if(result.State== EntityState.Deleted)
+                    {
+                        await _context.SaveChangesAsync();
+                        return new ResponseModel
+                        {
+                            IsSuccess = true,
+                            StatusCode = 200,
+                            Model = draw
+                        };
+                    }
+
+					return new ResponseModel
+					{
+						IsSuccess = false,
+						StatusCode = 400,
+						Model = "تعذر حذف السحب",
+					};
+				}
+
+				return new ResponseModel
+				{
+					IsSuccess = false,
+					StatusCode = 400,
+					Model = "السحب غير موجود بالفعل",
+				};
+			}
+            catch
+            {
+				return new ResponseModel
+				{
+					IsSuccess = false,
+					StatusCode = 500,
+					Model = "حدث خطأ اثناء حذف السحب",
+				};
+			}
+        }
+
 	}
 
 }

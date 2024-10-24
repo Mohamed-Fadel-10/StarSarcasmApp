@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.OTP;
+using StarSarcasm.Domain.Entities.Payments;
+using StarSarcasm.Domain.Entities.Payments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
