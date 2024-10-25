@@ -31,16 +31,16 @@ namespace StarSarcasm.Presentation.Controllers
             return StatusCode(StatusCodes.Status200OK, response);
         }
 
-        [HttpGet("UsersInZodiac")]
-        public async Task<IActionResult> UsersInZodiac(int zodiacNum)
+        [HttpGet("NearestUsersInZodiac")]
+        public async Task<IActionResult> NearestUsersInZodiac(string userId,int zodiacNum)
         {
-            var response = await _userService.UsersWithZodiac(zodiacNum);
+            var response = await _userService.NearestUsersInZodiac(userId,zodiacNum);
             if (response.IsSuccess)
             {
-                return StatusCode(response.StatusCode,response.Model);
+                return StatusCode(response.StatusCode, response.Model);
 
             }
-            return StatusCode(response.StatusCode,response.Message);
+            return StatusCode(response.StatusCode, response.Message);
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

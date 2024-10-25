@@ -13,6 +13,9 @@ namespace StarSarcasm.Domain.Entities
         public DateTime BirthDate { get; set; }
         public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
         public string Location { get; set; }
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+
         public virtual ICollection<UsersDraws>? UsersDraws { get; set; } = new List<UsersDraws>();
         public virtual ICollection<UsersMessages>? UsersMessages { get; set; } = new List<UsersMessages>();
         public virtual ICollection<Notification>? Notifications { get; set; } = new List<Notification>();

@@ -134,7 +134,8 @@ namespace StarSarcasm.Infrastructure.Services
                         Email = user.Email,
                         IsSubscribed = user.IsSubscribed,
                         FcmToken = user.FcmToken,
-                        Location = user.Location,
+                        Longitude = user.Longitude,
+                        Latitude= user.Latitude,
                         BirthDate = user.BirthDate.ToString("yyyy/mm/dd")
                     },
                     Message = "مبارك للفائز ",

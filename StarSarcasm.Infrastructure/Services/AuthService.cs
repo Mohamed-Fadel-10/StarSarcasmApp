@@ -61,7 +61,9 @@ namespace StarSarcasm.Infrastructure.Services
                     Name = model.Name,
                     Email = model.Email,
                     FcmToken = string.Empty,
-                    Location = model.Location,
+                    Longitude = model.Longitude,
+                    Latitude = model.Latitude,
+                    Location=model.Location,
                     BirthDate = model.BirthDate.Date,
                 };
 
@@ -162,7 +164,8 @@ namespace StarSarcasm.Infrastructure.Services
                         UserId = user.Id,
                         IsSubscribed = user.IsSubscribed,
                         UserName = user.UserName,
-                        Location = user.Location,
+                        Longitude = user.Longitude,
+                        Latitude= user.Latitude,
                         BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
                         Token = new JwtSecurityTokenHandler().WriteToken(token),
                         RefreshToken = refreshToken,

@@ -49,7 +49,8 @@ namespace StarSarcasm.Infrastructure.Services
                     ReceiverDate = (DateTime)(receiver?.BirthDate),
                     ReceiverId = receiver?.Id,
                     FcmToken =receiver.FcmToken,
-                    Location=receiver.Location,
+                    Longitude=receiver.Longitude,
+                    Latitude=receiver.Latitude,
                 };
 
                 chatsDTO.Add(item);
