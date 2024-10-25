@@ -261,6 +261,58 @@ namespace StarSarcasm.Infrastructure.Services
 			}
         }
 
-	}
+        public async Task<ResponseModel> GetAllSubscribers(int id)
+        {
+            try
+            {
+                var all = await _context.UsersDraws.Include(d => d.Draw)
+                    .Include(d=>d.User)
+                    .Where(d => d.DrawId == id).Select(d=>d.User).ToListAsync();
+                if (all.Any())
+                {
+                    List<UserDTO> users = new();
+                    foreach (var user in all)
+                    {
+                        var dto = new UserDTO
+                        {
+                            Id = user.Id,
+                            UserName = user.UserName,
+                            Email = user.Email,
+                            IsSubscribed = user.IsSubscribed,
+                            FcmToken = user.FcmToken,
+                            BirthDate = user.BirthDate.ToString("yyyy/MM/dd"),
+                            Location = user.Location,
+                            Longitude = user.Longitude,
+                            Latitude = user.Latitude,
+                        };
+                        users.Add(dto);
+                    }
+
+                    return new ResponseModel
+                    {
+                        IsSuccess = true,
+                        StatusCode = 200,
+                        Model = users
+                    };
+                }
+                return new ResponseModel
+                {
+                    IsSuccess = true,
+                    StatusCode = 204,
+                    Message="لا يوجد مشتركين في السحب"
+                };
+            }
+            catch
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "حدث خطأ، يرجى المحاولة في وقت لاحق"
+                };
+            }
+        }
+
+    }
 
 }
