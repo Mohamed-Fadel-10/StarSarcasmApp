@@ -252,7 +252,11 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("ReciverChatName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenderChatName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

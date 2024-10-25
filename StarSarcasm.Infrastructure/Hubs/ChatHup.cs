@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StarSarcasm.Application.DTOs;
+using StarSarcasm.Application.Response;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Enums;
 using StarSarcasm.Infrastructure.Data;
@@ -148,26 +149,35 @@ namespace StarSarcasm.Infrastructure.Hubs
         //} 
         #endregion
 
-        public async Task SendMessage(SendMessageDTO model)
+ 
+        public async Task<ResponseModel> SendMessage(SendMessageDTO model)
         {
             if (model == null || string.IsNullOrEmpty(model.SenderId) || string.IsNullOrEmpty(model.ReciverId))
             {
-                throw new ArgumentException("Invalid message data.");
+                return new ResponseModel { IsSuccess=false,Message="Invalid Model Data For Message"};
             }
 
             var chat = await _context.UsersChats
                 .Where(uc => (uc.User1 == model.SenderId && uc.User2 == model.ReciverId) ||
-                             (uc.User1  == model.ReciverId && uc.User2 == model.SenderId))
+                             (uc.User1 == model.ReciverId && uc.User2 == model.SenderId))
                 .Select(uc => uc.Chat)
                 .FirstOrDefaultAsync();
 
             if (chat == null)
             {
-                var reciverName = await _context.Users.FirstOrDefaultAsync(u => u.Id == model.ReciverId);
+                var sender = await _context.Users.FirstOrDefaultAsync(u => u.Id == model.SenderId);
+                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == model.ReciverId);
+
+                if (sender == null || receiver == null)
+                {
+                    return  new ResponseModel { IsSuccess = false, Message = "Sender or receiver not found." };
+                }
+
                 chat = new Chat
                 {
                     Id = $"{model.SenderId}-{model.ReciverId}",
-                    Name = reciverName.Name,
+                    SenderChatName = sender.Name,
+                    ReciverChatName = receiver.Name,
                     CreatedAt = DateTime.Now,
                     IsDeleted = false,
                 };
@@ -188,25 +198,11 @@ namespace StarSarcasm.Infrastructure.Hubs
 
             if (model.Type == 1 && !string.IsNullOrEmpty(model.VoiceFile))
             {
-                var uploadsFolder = Path.Combine(_env.WebRootPath, "voices");
-                if (!Directory.Exists(uploadsFolder))
+                var uploadResult = await SaveVoiceFileAsync(model);
+                if (!uploadResult.IsSuccess)
                 {
-                    Directory.CreateDirectory(uploadsFolder);
+                    return uploadResult; 
                 }
-
-                var fileName = Guid.NewGuid().ToString() + ".mp3";
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                var base64Data = model.VoiceFile.Substring(model.VoiceFile.IndexOf(',') + 1);
-                var fileBytes = Convert.FromBase64String(base64Data);
-
-                await File.WriteAllBytesAsync(filePath, fileBytes);
-
-                var baseUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://" +
-                              $"{_httpContextAccessor.HttpContext.Request.Host}" +
-                              $"/voices/{fileName}";
-                model.Content = baseUrl;
-                Console.WriteLine(baseUrl);
             }
 
             var message = new ChatMessages
@@ -222,20 +218,44 @@ namespace StarSarcasm.Infrastructure.Hubs
                 ReciverId = model.ReciverId
             };
 
+            await _context.ChatMessages.AddAsync(message);
+            await _context.SaveChangesAsync();
+
+            if (connectedUsers.ContainsKey(model.ReciverId))
+            {
+                var receiverConnectionId = connectedUsers[model.ReciverId];
+                await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", model.SenderId, model.Content, message.SendAt, message.Type);
+            }
+
+            return new ResponseModel { IsSuccess = true, Message = "Message Sent Successfully" };
+        }
+
+        private async Task<ResponseModel> SaveVoiceFileAsync(SendMessageDTO model)
+        {
             try
             {
-                await _context.ChatMessages.AddAsync(message);
-                await _context.SaveChangesAsync();
-
-                if (connectedUsers.ContainsKey(model.ReciverId))
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "voices");
+                if (!Directory.Exists(uploadsFolder))
                 {
-                    var receiverConnectionId = connectedUsers[model.ReciverId];
-                    await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", model.SenderId, model.Content, message.SendAt,message.Type);
+                    Directory.CreateDirectory(uploadsFolder);
                 }
+
+                var fileName = Guid.NewGuid().ToString() + ".mp3";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                var base64Data = model.VoiceFile.Substring(model.VoiceFile.IndexOf(',') + 1);
+                var fileBytes = Convert.FromBase64String(base64Data);
+
+                await File.WriteAllBytesAsync(filePath, fileBytes);
+
+                var baseUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{_httpContextAccessor.HttpContext.Request.Host}{_httpContextAccessor.HttpContext.Request.PathBase}";
+                model.Content = $"{baseUrl}/voices/{fileName}";
+
+                return new ResponseModel { IsSuccess = true, Message = "Voice Stored Successfully" };
             }
-            catch (Exception ex)
+            catch
             {
-                throw new Exception("An error occurred while saving the message.", ex);
+                return new ResponseModel { IsSuccess = false, Message = "An error occurred while uploading the voice file." };
             }
         }
 

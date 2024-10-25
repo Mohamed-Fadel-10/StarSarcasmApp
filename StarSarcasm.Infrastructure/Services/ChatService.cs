@@ -22,8 +22,8 @@ namespace StarSarcasm.Infrastructure.Services
         {
             var chats = await _context.UsersChats
                 .Include(uc => uc.Chat)
-                .Include(uc => uc.Sender) 
-                .Include(uc => uc.Receiver) 
+                .Include(uc => uc.Sender)
+                .Include(uc => uc.Receiver)
                 .Where(uc => uc.User1 == id || uc.User2 == id)
                 .ToListAsync();
 
@@ -31,7 +31,7 @@ namespace StarSarcasm.Infrastructure.Services
             {
                 return new ResponseModel
                 {
-                    StatusCode = 400,
+                    StatusCode = 404,
                     Message = "لا توجد محادثات قمت باجرائها حتى الان",
                     IsSuccess = false,
                 };
@@ -42,14 +42,16 @@ namespace StarSarcasm.Infrastructure.Services
             {
                 var receiver = chat.User1 == id ? chat.Receiver : chat.Sender;
 
+                var chatName = chat.User1 == id ? chat.Chat.ReciverChatName : chat.Chat.SenderChatName;
+
                 var item = new UserChatDTO
                 {
                     ChatId = chat.Chat.Id,
-                    ChatName = chat.Chat.Name,
+                    ChatName = chatName, 
                     ReceiverDate = (DateTime)(receiver?.BirthDate),
                     ReceiverId = receiver?.Id,
-                    FcmToken =receiver.FcmToken,
-                    Location=receiver.Location,
+                    FcmToken = receiver?.FcmToken,
+                    Location = receiver?.Location,
                 };
 
                 chatsDTO.Add(item);

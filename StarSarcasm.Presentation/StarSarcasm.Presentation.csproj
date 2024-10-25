@@ -24,8 +24,4 @@
     <ProjectReference Include="..\StarSarcasm.Infrastructure\StarSarcasm.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
 </Project>

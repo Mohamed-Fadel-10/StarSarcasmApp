@@ -113,7 +113,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddSignalR(o =>
 {
     o.EnableDetailedErrors = true;
-    o.MaximumReceiveMessageSize = 102400;
+    o.MaximumReceiveMessageSize = 1024 * 1024;
 });
 builder.Services.AddTransient<IOTPService, OTPService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
