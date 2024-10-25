@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using StarSarcasm.Domain.Entities.Payments;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 

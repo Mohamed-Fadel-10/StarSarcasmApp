@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 
 namespace StarSarcasm.Presentation.Controllers
@@ -66,5 +67,17 @@ namespace StarSarcasm.Presentation.Controllers
             return StatusCode(response.StatusCode, response.Message);
 
         }
-    }
+
+		[HttpPut("updateUser")]
+		public async Task<IActionResult> UpdateUser(string userId,UserDTO dto)
+		{
+			var response = await _userService.UpdateAsync(userId,dto);
+			if (response.IsSuccess)
+			{
+				return StatusCode(response.StatusCode, response.Model);
+			}
+			return StatusCode(response.StatusCode, response.Message);
+
+		}
+	}
 }

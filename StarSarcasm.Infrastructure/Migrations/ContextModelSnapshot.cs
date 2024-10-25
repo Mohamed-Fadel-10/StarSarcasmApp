@@ -422,13 +422,41 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.ToTable("OTP");
                 });
 
-            modelBuilder.Entity("StarSarcasm.Domain.Entities.Payment", b =>
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.Payments.Payment", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Amount")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MerchantId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PayerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdateTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -712,7 +740,7 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("StarSarcasm.Domain.Entities.Payment", b =>
+            modelBuilder.Entity("StarSarcasm.Domain.Entities.Payments.Payment", b =>
                 {
                     b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "User")
                         .WithMany("Payments")

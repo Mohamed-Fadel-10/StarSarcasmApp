@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Domain.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace StarSarcasm.Presentation.Controllers
 {
@@ -52,6 +53,28 @@ namespace StarSarcasm.Presentation.Controllers
             }
 			return StatusCode(response.StatusCode, response.Message);
 
+		}
+
+        [HttpPut("updateDraw")]
+        public async Task<IActionResult> Update([FromForm][Required] int darwId, [FromForm] DrawDTO dto)
+        {
+            var response=await _awardDrawService.UpdateAsync(darwId, dto);
+            if (response.IsSuccess)
+            {
+                return StatusCode(response.StatusCode, response.Model);
+            }
+            return StatusCode(response.StatusCode, response.Message);
+        }
+
+		[HttpDelete("deleteDraw")]
+		public async Task<IActionResult> Delete(int darwId)
+		{
+			var response = await _awardDrawService.DeleteAsync(darwId);
+			if (response.IsSuccess)
+			{
+				return StatusCode(response.StatusCode, response.Model);
+			}
+			return StatusCode(response.StatusCode, response.Message);
 		}
 
 	}

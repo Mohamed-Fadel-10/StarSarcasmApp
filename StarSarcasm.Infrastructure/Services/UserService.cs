@@ -179,5 +179,87 @@ namespace StarSarcasm.Infrastructure.Services
             }
 
         }
-    }
+
+		public async Task<ResponseModel> UpdateAsync(string id, UserDTO dto)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if(user != null)
+                {
+                    var newEmail=await _userManager.FindByEmailAsync(dto.Email);
+                    var newUserName=await _userManager.FindByNameAsync(dto.UserName);
+
+					if (newEmail!=user && newEmail != null)
+                    {
+						return new ResponseModel
+						{
+							IsSuccess = false,
+							StatusCode = 400,
+							Message = "البريد الالكتروني مستخدم من قبل"
+						};
+					}
+
+
+					if (newUserName!=user && newUserName != null)
+					{
+						return new ResponseModel
+						{
+							IsSuccess = false,
+							StatusCode = 400,
+							Message = "هذا الاسم مستخدم من قبل"
+						};
+					}
+
+					var newUser = new ApplicationUser
+                    {
+                        Id = id,
+                        Name = dto.UserName,
+                        UserName = dto.UserName,
+                        FcmToken = user.FcmToken,
+                        Location = dto.Location,
+                        BirthDate = DateTime.Parse(dto.BirthDate),
+                        Email = dto.Email,
+                        IsSubscribed = user.IsSubscribed
+                    };
+
+                    _context.Entry(user).CurrentValues.SetValues(newUser);
+                    var result = _context.Entry(user);
+                    if (result.State != EntityState.Modified)
+                    {
+                        return new ResponseModel
+                        {
+                            IsSuccess = false,
+                            StatusCode = 400,
+                            Message = "تعذر تعديل البيانات"
+                        };
+                    }
+
+                    await _context.SaveChangesAsync();
+                    return new ResponseModel
+                    {
+                        IsSuccess = true,
+                        StatusCode = 200,
+                        Model = dto,
+						Message = "تم تعديل البيانات بنجاح"
+					};
+                }
+				return new ResponseModel
+				{
+					IsSuccess = false,
+					StatusCode = 404,
+					Message = "هذا المستخدم غير موجود"
+				};
+			}
+            catch
+            {
+				return new ResponseModel
+				{
+					IsSuccess = false,
+					StatusCode = 500,
+					Message = "حدث خطأ اثناء تعديل البيانات"
+				};
+			}
+        }
+	}
 }
