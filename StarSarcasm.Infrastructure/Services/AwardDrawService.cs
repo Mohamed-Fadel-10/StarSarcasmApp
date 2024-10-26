@@ -130,7 +130,7 @@ namespace StarSarcasm.Infrastructure.Services
                     Model = new UserDTO
                     {
                         Id = user.Id,
-                        UserName = user.Name,
+                        Name = user.Name,
                         Email = user.Email,
                         IsSubscribed = user.IsSubscribed,
                         FcmToken = user.FcmToken,
@@ -276,7 +276,7 @@ namespace StarSarcasm.Infrastructure.Services
                         var dto = new UserDTO
                         {
                             Id = user.Id,
-                            UserName = user.UserName,
+                            Name = user.Name,
                             Email = user.Email,
                             IsSubscribed = user.IsSubscribed,
                             FcmToken = user.FcmToken,

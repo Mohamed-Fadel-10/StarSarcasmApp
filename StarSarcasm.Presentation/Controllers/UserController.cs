@@ -69,7 +69,7 @@ namespace StarSarcasm.Presentation.Controllers
         }
 
 		[HttpPut("updateUser")]
-		public async Task<IActionResult> UpdateUser(string userId,UserDTO dto)
+		public async Task<IActionResult> UpdateUser(string userId,[FromForm] ProfileDTO dto)
 		{
 			var response = await _userService.UpdateAsync(userId,dto);
 			if (response.IsSuccess)

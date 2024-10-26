@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
@@ -40,7 +42,7 @@ namespace StarSarcasm.Infrastructure.Services
                 var userDto = new UserDTO
                 {
                     Id = user.Id,
-                    UserName = user.UserName,
+                    Name = user.Name,
                     Email = user.Email,
                     FcmToken = user.FcmToken,
                     IsSubscribed = user.IsSubscribed,
@@ -69,7 +71,7 @@ namespace StarSarcasm.Infrastructure.Services
                     var userDto = new UserDTO
                     {
                         Id = subscriber.Id,
-                        UserName = subscriber.UserName,
+                        Name = subscriber.Name,
                         Email = subscriber.Email,
                         FcmToken = subscriber.FcmToken,
                         IsSubscribed = subscriber.IsSubscribed,
@@ -142,7 +144,7 @@ namespace StarSarcasm.Infrastructure.Services
                             var dto = new UserDTO
                             {
                                 Id=user.Id,
-                                UserName=user.UserName,
+                                Name=user.Name,
                                 Email=user.Email,
                                 FcmToken=user.FcmToken,
                                 IsSubscribed=user.IsSubscribed,
@@ -165,70 +167,41 @@ namespace StarSarcasm.Infrastructure.Services
 
         }
 
-		public async Task<ResponseModel> UpdateAsync(string id, UserDTO dto)
+		public async Task<ResponseModel> UpdateAsync(string id, ProfileDTO dto)
         {
             try
             {
                 var user = await _userManager.FindByIdAsync(id);
                 if(user != null)
                 {
-                    var newEmail=await _userManager.FindByEmailAsync(dto.Email);
-                    var newUserName=await _userManager.FindByNameAsync(dto.UserName);
-
-					if (newEmail!=user && newEmail != null)
+                    user.Name = dto.Name ?? user.Name;
+                    user.Location = dto.Location ?? user.Location;
+                    user.Longitude = dto.Longitude ?? user.Longitude;
+                    user.Latitude= dto.Latitude ?? user.Latitude;
+                    if(DateTime.TryParse(dto.BirthDate, out var birthdate))
                     {
-						return new ResponseModel
-						{
-							IsSuccess = false,
-							StatusCode = 400,
-							Message = "البريد الالكتروني مستخدم من قبل"
-						};
-					}
-
-
-					if (newUserName!=user && newUserName != null)
-					{
-						return new ResponseModel
-						{
-							IsSuccess = false,
-							StatusCode = 400,
-							Message = "هذا الاسم مستخدم من قبل"
-						};
-					}
-
-					var newUser = new ApplicationUser
-                    {
-                        Id = id,
-                        Name = dto.UserName,
-                        UserName = dto.UserName,
-                        FcmToken = user.FcmToken,
-                        Longitude = dto.Longitude,
-                        Latitude= dto.Latitude,
-                        BirthDate = DateTime.Parse(dto.BirthDate),
-                        Email = dto.Email,
-                        IsSubscribed = user.IsSubscribed
-                    };
-
-                    _context.Entry(user).CurrentValues.SetValues(newUser);
-                    var result = _context.Entry(user);
-                    if (result.State != EntityState.Modified)
-                    {
-                        return new ResponseModel
-                        {
-                            IsSuccess = false,
-                            StatusCode = 400,
-                            Message = "تعذر تعديل البيانات"
-                        };
+                        user.BirthDate= birthdate;
                     }
 
-                    await _context.SaveChangesAsync();
+                    var result = _context.Entry(user);
+                    if (result.State == EntityState.Modified)
+                    {
+                        await _context.SaveChangesAsync();
+
+                        return new ResponseModel
+                        {
+                            IsSuccess = true,
+                            StatusCode = 200,
+                            Model = dto,
+                            Message = "تم تعديل البيانات بنجاح"
+                        };
+                    }
                     return new ResponseModel
                     {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Model = dto,
-						Message = "تم تعديل البيانات بنجاح"
-					};
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "لم يحدث تغيير على البيانات الموجودة مسبقا"
+                    };
                 }
 				return new ResponseModel
 				{
@@ -270,7 +243,7 @@ namespace StarSarcasm.Infrastructure.Services
                         var userChat = new UserChatDTO
                         {
                             ChatId = null,
-                            ChatName = user.UserName,
+                            ChatName = user.Name,
                             ReceiverDate = DateTime.Parse(user.BirthDate),
                             ReceiverId = user.Id,
                             FcmToken = user.FcmToken,

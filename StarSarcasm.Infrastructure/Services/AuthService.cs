@@ -57,7 +57,6 @@ namespace StarSarcasm.Infrastructure.Services
 
                 var user = new ApplicationUser
                 {
-                    UserName = model.Name,
                     Name = model.Name,
                     Email = model.Email,
                     FcmToken = string.Empty,
