@@ -125,6 +125,7 @@ builder.Services.AddScoped<IAwardDrawService,AwardDrawService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
+builder.Services.AddScoped<IAppMessageService, AppMessageService>();
 
 
 builder.Services.AddDbContext<Context>(options =>
