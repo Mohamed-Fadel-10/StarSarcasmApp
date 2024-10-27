@@ -28,7 +28,7 @@ namespace StarSarcasm.Infrastructure.Services
 		{
 			try
 			{
-				var user=await _userManager.FindByIdAsync(userId);
+				var user = await _userManager.FindByIdAsync(userId);
 				if (user != null)
 				{
 					var payment = new Payment

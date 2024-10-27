@@ -24,7 +24,7 @@ namespace StarSarcasm.Presentation.Controllers
             {
                 return StatusCode(response.StatusCode, response.Model);
             }
-            return StatusCode(response.StatusCode, response.Message);
+            return StatusCode(response.StatusCode, response.Model);
         }
     }
 }

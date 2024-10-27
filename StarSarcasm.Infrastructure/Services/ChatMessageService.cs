@@ -41,7 +41,7 @@ namespace StarSarcasm.Infrastructure.Services
                 chatMessages.Add(Message);
             }
             return messages.Any() ? new ResponseModel { IsSuccess = true, StatusCode = 200, Model = chatMessages } :
-                new ResponseModel { IsSuccess = false, StatusCode = 200, Message = "No Messages For This Chat" };
+                new ResponseModel { IsSuccess = false, StatusCode = 200, Model = new List<ChatMessageDTO>() };
         }
     }
 }

@@ -11,5 +11,7 @@ namespace StarSarcasm.Application.Interfaces
     public interface IPostservice
     {
         public Task<ResponseModel> AddPost(PostDTO model);
+        public Task<ResponseModel> DeletePost(int Id);
+        public Task<ResponseModel> GetAllPosts();
     }
 }

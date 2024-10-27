@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Interfaces.IFileUploadService;
@@ -80,10 +82,52 @@ namespace StarSarcasm.Infrastructure.Services
 
             return new ResponseModel
             {
-                StatusCode = 200,
+                StatusCode = 201,
                 Message = "تم إضافة المنشور بنجاح",
+                Model=post,
                 IsSuccess = true
             };
+        }
+
+        public async Task<ResponseModel> DeletePost(int Id)
+        {
+                try
+                {
+                    var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == Id);
+                    if (post == null) {
+                        return new ResponseModel
+                        {
+                            IsSuccess = false,
+                            StatusCode = 400,
+                            Message = "لا يوجد منشور بهذا الرقم التعريفى"
+                        };
+                    }
+                    _context.Posts.Remove(post);
+                    await _context.SaveChangesAsync();
+
+                    return new ResponseModel { 
+                        IsSuccess = true, 
+                        Message = $"تم حذف المنشور بنجاح",
+                        StatusCode=200 
+                    };
+
+                } 
+                catch (Exception ex) {
+                    return new ResponseModel 
+                    {
+                        IsSuccess = false,
+                        Message = "حدث خطأ اثناء حذف المنشور برجائ اعادة المحاولة ",
+                        StatusCode=500 
+                    };
+                }
+        }
+        public async Task<ResponseModel> GetAllPosts()
+        {
+            var posts=await _context.Posts.ToListAsync();
+            return
+                posts.Any() ? 
+                new ResponseModel { IsSuccess = true, Model = posts, StatusCode = 200 } :
+                new ResponseModel { IsSuccess = false, Model = new List<Post>(), StatusCode = 404 };
         }
 
     }

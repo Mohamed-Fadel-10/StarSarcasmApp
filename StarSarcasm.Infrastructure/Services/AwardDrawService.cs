@@ -292,7 +292,6 @@ namespace StarSarcasm.Infrastructure.Services
                             IsSubscribed = user.IsSubscribed,
                             FcmToken = user.FcmToken,
                             BirthDate = user.BirthDate.ToString("yyyy/MM/dd"),
-                           // Location = user.Location,
                             Longitude = user.Longitude,
                             Latitude = user.Latitude,
                         };
@@ -322,6 +321,34 @@ namespace StarSarcasm.Infrastructure.Services
                     Message = "حدث خطأ، يرجى المحاولة في وقت لاحق"
                 };
             }
+        }
+
+        //  Last 4 draws and it's winners
+
+        public async Task<ResponseModel> GetLastFourDraws()
+        {
+            var draws = await _context.Draws
+                .Join(_context.UsersDraws,
+                    d => d.Id,
+                    ud => ud.DrawId,
+                    (d, ud) => new { Draw = d, UserDraws = ud })
+                .Where(d => d.UserDraws.IsWinner == true)
+                .OrderBy(d => d.Draw.EndAt)
+                .Take(4)
+                .Select(u => new {
+                    UserId = u.UserDraws.User.Name,
+                    Email = u.UserDraws.User.Email,
+                    IsUserWinner = true,
+                    DrawId = u.Draw.Id,
+                    DrawName = u.Draw.Name,
+                    DrawEndDate = u.Draw.EndAt,
+                    LastWinDate = u.UserDraws.LastWinDate
+                })
+                .ToListAsync();
+
+            return draws.Any() ?
+                new ResponseModel { IsSuccess = true, Model = draws, StatusCode = 200 } :
+                new ResponseModel { IsSuccess = false, Model = new List<Draw>(), StatusCode = 404 };
         }
 
     }

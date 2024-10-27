@@ -64,7 +64,6 @@ namespace StarSarcasm.Infrastructure.Services
                     FcmToken = string.Empty,
                     Longitude = model.Longitude,
                     Latitude = model.Latitude,
-                   // Location=model.Location,
                     BirthDate = model.BirthDate.Date,
                     UserName= model.Email,
                 };

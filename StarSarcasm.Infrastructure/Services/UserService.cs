@@ -100,7 +100,7 @@ namespace StarSarcasm.Infrastructure.Services
                 Model =
                 new 
                 {
-                    UserName=user.UserName,
+                    Name=user.Name,
                     BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
                     Email=user.Email,
                     isSubscribed=user.IsSubscribed,
@@ -148,10 +148,9 @@ namespace StarSarcasm.Infrastructure.Services
                                 Email=user.Email,
                                 FcmToken=user.FcmToken,
                                 IsSubscribed=user.IsSubscribed,
-                                BirthDate=user.BirthDate.ToString("yyyy/MM/dd"),
+                                BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
                                 Longitude=user.Longitude,
                                 Latitude=user.Latitude,
-                               // Location=user.Location,
                             };
                             users.Add(dto);
                         }
