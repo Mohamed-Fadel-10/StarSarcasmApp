@@ -45,7 +45,9 @@ namespace StarSarcasm.Infrastructure.Services
         {
             try
             {
-                if (await _userManager.FindByEmailAsync(model.Email) != null)
+                var isEmailExisted = await _userManager.FindByEmailAsync(model.Email);
+
+                if (isEmailExisted != null)
                 {
                     return new ResponseModel
                     {
@@ -57,12 +59,14 @@ namespace StarSarcasm.Infrastructure.Services
 
                 var user = new ApplicationUser
                 {
-                    UserName = model.Name,
                     Name = model.Name,
                     Email = model.Email,
                     FcmToken = string.Empty,
-                    Location = model.Location,
+                    Longitude = model.Longitude,
+                    Latitude = model.Latitude,
+                   // Location=model.Location,
                     BirthDate = model.BirthDate.Date,
+                    UserName= model.Email,
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -162,7 +166,8 @@ namespace StarSarcasm.Infrastructure.Services
                         UserId = user.Id,
                         IsSubscribed = user.IsSubscribed,
                         UserName = user.UserName,
-                        Location = user.Location,
+                        Longitude = user.Longitude,
+                        Latitude= user.Latitude,
                         BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
                         Token = new JwtSecurityTokenHandler().WriteToken(token),
                         RefreshToken = refreshToken,

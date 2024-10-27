@@ -31,6 +31,17 @@ namespace StarSarcasm.Presentation.Controllers
             return StatusCode(response.StatusCode, response.Message);
         }
 
+        [HttpGet("allSubscribers")]
+        public async Task<IActionResult> GetAllSubscribers(int drawId)
+        {
+            var response = await _awardDrawService.GetAllSubscribers(drawId);
+            if (response.IsSuccess)
+            {
+                return StatusCode(response.StatusCode, response.Model);
+            }
+            return StatusCode(response.StatusCode, response.Message);
+        }
+
         [HttpPost("addDraw")]
         public async Task<IActionResult> Add([FromForm]DrawDTO dto)
         {

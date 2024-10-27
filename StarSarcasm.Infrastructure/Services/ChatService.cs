@@ -50,8 +50,9 @@ namespace StarSarcasm.Infrastructure.Services
                     ChatName = chatName, 
                     ReceiverDate = (DateTime)(receiver?.BirthDate),
                     ReceiverId = receiver?.Id,
-                    FcmToken = receiver?.FcmToken,
-                    Location = receiver?.Location,
+                    FcmToken =receiver.FcmToken,
+                    Longitude=receiver.Longitude,
+                    Latitude=receiver.Latitude,
                 };
 
                 chatsDTO.Add(item);

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
@@ -40,13 +42,14 @@ namespace StarSarcasm.Infrastructure.Services
                 var userDto = new UserDTO
                 {
                     Id = user.Id,
-                    UserName = user.UserName,
+                    Name = user.Name,
                     Email = user.Email,
                     FcmToken = user.FcmToken,
                     IsSubscribed = user.IsSubscribed,
                     BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
-                    Location = user.Location,
-
+                    Longitude = user.Longitude,
+                    Latitude = user.Latitude,
+                  //  Location=user.Location,
                 };
                 dto.Add(userDto);
             }
@@ -68,13 +71,14 @@ namespace StarSarcasm.Infrastructure.Services
                     var userDto = new UserDTO
                     {
                         Id = subscriber.Id,
-                        UserName = subscriber.UserName,
+                        Name = subscriber.Name,
                         Email = subscriber.Email,
                         FcmToken = subscriber.FcmToken,
                         IsSubscribed = subscriber.IsSubscribed,
                         BirthDate = subscriber.BirthDate.ToString("yyyy-MM-dd"),
-                        Location = subscriber.Location,
-
+                        Longitude = subscriber.Longitude,
+                        Latitude= subscriber.Latitude,
+                      //  Location= subscriber.Location
                     };
                     dto.Add(userDto);
                 }
@@ -100,7 +104,9 @@ namespace StarSarcasm.Infrastructure.Services
                     BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
                     Email=user.Email,
                     isSubscribed=user.IsSubscribed,
-                    Location=user.Location,
+                    Longitude=user.Longitude,
+                    Latitude=user.Latitude,
+                  //  Location=user.Location
                 }
             };
         }
@@ -123,9 +129,9 @@ namespace StarSarcasm.Infrastructure.Services
         }
 
 
-        public async Task<ResponseModel> UsersWithZodiac(int zodiacNum)
+        private async Task<List<UserDTO>> UsersWithZodiac(int zodiacNum)
         {
-            List<UserChatDTO> users = new();
+            List<UserDTO> users = new();
             try
             {
                 var zodiacUsers = await _context.Users.ToListAsync();
@@ -135,114 +141,67 @@ namespace StarSarcasm.Infrastructure.Services
                     {
                         if (user.BirthDate.Day == zodiacNum)
                         {
-                            var dto = new UserChatDTO
+                            var dto = new UserDTO
                             {
-                                ChatId = null,
-                                ChatName = user.UserName,
-                                ReceiverDate = user.BirthDate,
-                                ReceiverId =user.Id,
-                                FcmToken = user.FcmToken,
-                                Location = user.Location
+                                Id=user.Id,
+                                Name=user.Name,
+                                Email=user.Email,
+                                FcmToken=user.FcmToken,
+                                IsSubscribed=user.IsSubscribed,
+                                BirthDate=user.BirthDate.ToString("yyyy/MM/dd"),
+                                Longitude=user.Longitude,
+                                Latitude=user.Latitude,
+                               // Location=user.Location,
                             };
                             users.Add(dto);
                         }
                     }
-
-                    if (users.Count > 0)
-                    {
-                        return new ResponseModel
-                        {
-                            IsSuccess = true,
-                            StatusCode = 200,
-                            Model = users
-                        };
-                    }
-                    return new ResponseModel
-                    {
-                        IsSuccess = false,
-                        StatusCode = 404,
-                        Message = "لا يوجد مستخدمين بهذا البرج"
-                    };
                 }
-
-                return new ResponseModel
-                {
-                    IsSuccess = false,
-                    StatusCode = 404,
-                    Message = "لا يوجد مستخدمين!"
-                };
+                return users;
 
             }
             catch (Exception ex)
             {
-                return new ResponseModel { IsSuccess = false, Message = "حدث خطأ غير متوقع يرجى اعادة المحاولة", StatusCode = 500 };
+                return new List<UserDTO>();
             }
 
         }
 
-		public async Task<ResponseModel> UpdateAsync(string id, UpdateUserDTO dto)
+		public async Task<ResponseModel> UpdateAsync(string id, ProfileDTO dto)
         {
             try
             {
                 var user = await _userManager.FindByIdAsync(id);
                 if(user != null)
                 {
-                    var newEmail=await _userManager.FindByEmailAsync(dto.Email);
-                    var newUserName=await _userManager.FindByNameAsync(dto.UserName);
-
-					if (newEmail!=user && newEmail != null)
+                    user.Name = dto.Name ?? user.Name;
+                   // user.Location = dto.Location ?? user.Location;
+                    user.Longitude = dto.Longitude ?? user.Longitude;
+                    user.Latitude= dto.Latitude ?? user.Latitude;
+                    if(DateTime.TryParse(dto.BirthDate, out var birthdate))
                     {
-						return new ResponseModel
-						{
-							IsSuccess = false,
-							StatusCode = 400,
-							Message = "البريد الالكتروني مستخدم من قبل"
-						};
-					}
-
-
-					if (newUserName!=user && newUserName != null)
-					{
-						return new ResponseModel
-						{
-							IsSuccess = false,
-							StatusCode = 400,
-							Message = "هذا الاسم مستخدم من قبل"
-						};
-					}
-
-					var newUser = new ApplicationUser
-                    {
-                        Id = id,
-                        Name = dto.UserName,
-                        UserName = dto.UserName,
-                        FcmToken = user.FcmToken,
-                        Location = dto.Location,
-                        BirthDate = DateTime.Parse(dto.BirthDate),
-                        Email = dto.Email,
-                        IsSubscribed = user.IsSubscribed
-                    };
-
-                    _context.Entry(user).CurrentValues.SetValues(newUser);
-                    var result = _context.Entry(user);
-                    if (result.State != EntityState.Modified)
-                    {
-                        return new ResponseModel
-                        {
-                            IsSuccess = false,
-                            StatusCode = 400,
-                            Message = "تعذر تعديل البيانات"
-                        };
+                        user.BirthDate= birthdate;
                     }
 
-                    await _context.SaveChangesAsync();
+                    var result = _context.Entry(user);
+                    if (result.State == EntityState.Modified)
+                    {
+                        await _context.SaveChangesAsync();
+
+                        return new ResponseModel
+                        {
+                            IsSuccess = true,
+                            StatusCode = 200,
+                            Model = dto,
+                            Message = "تم تعديل البيانات بنجاح"
+                        };
+                    }
                     return new ResponseModel
                     {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Model = dto,
-						Message = "تم تعديل البيانات بنجاح"
-					};
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "لم يحدث تغيير على البيانات الموجودة مسبقا"
+                    };
                 }
 				return new ResponseModel
 				{
@@ -261,5 +220,86 @@ namespace StarSarcasm.Infrastructure.Services
 				};
 			}
         }
-	}
+
+        public async Task<ResponseModel> NearestUsersInZodiac(string userId, int zodiacNum)
+        {
+            var currentUser=await _userManager.FindByIdAsync(userId);
+            if (currentUser != null)
+            {
+                var users = await UsersWithZodiac(zodiacNum);
+                if (users.Count > 0)
+                {
+                    List<UserChatDTO> nearestUsers = new();
+                    foreach(var user in users)
+                    {
+                        if (user.Id == userId)
+                        {
+                            // not return the current user in the list
+                            continue;
+                        }
+                        var distance=await CalculateDistance(currentUser.Latitude,currentUser.Longitude
+                            ,user.Latitude,user.Longitude);
+
+                        var userChat = new UserChatDTO
+                        {
+                            ChatId = null,
+                            ChatName = user.Name,
+                            ReceiverDate = DateTime.Parse(user.BirthDate),
+                            ReceiverId = user.Id,
+                            FcmToken = user.FcmToken,
+                            Longitude = user.Longitude,
+                            Latitude = user.Latitude,
+                            Distance = distance,
+                           // Location = user.Location
+                        };
+                        nearestUsers.Add(userChat);
+                        
+                    }
+
+                    return new ResponseModel
+                    {
+                        IsSuccess = true,
+                        StatusCode = 200,
+                        Model = nearestUsers.OrderBy(u=>u.Distance)
+                    };
+                }
+
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 404,
+                    Message = "لا يوجد اشخاص يحملون نفس هذا البرج"
+                };
+            }
+
+            return new ResponseModel
+            {
+                IsSuccess = false,
+                StatusCode = 404,
+                Message = "هذا المستخدم غير موجود"
+            };
+        }
+
+        private async Task<double> CalculateDistance(double lat1,double long1,double lat2,double long2)
+        {
+            var earthRadius = 6371; // earth Radius with  km
+
+            var dLatitude = ToRadians(lat2 - lat1); // difference between lat1 and lat2 and covert it to radians
+            var dLongitude = ToRadians(long2 - long1);
+
+            //haversine
+            var dSin = Math.Sin(dLatitude / 2) * Math.Sin(dLatitude / 2) +
+                Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2))
+                * Math.Sin(dLongitude / 2) * Math.Sin(dLongitude / 2);
+            var rDistance = 2 * Math.Atan2(Math.Sqrt(dSin), Math.Sqrt(1 - dSin));
+
+            var distanceWithKM = earthRadius * rDistance;
+            return distanceWithKM;
+        }
+
+        private double ToRadians(double angle)
+        {
+            return angle * (Math.PI / 180);
+        }
+    }
 }
