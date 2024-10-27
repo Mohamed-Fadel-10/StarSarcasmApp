@@ -8,8 +8,8 @@ namespace StarSarcasm.Domain.Entities.Payments
 {
 	public class LinkModel
 	{
-		public string? href {  get; set; }
-		public string? rel {  get; set; }
-		public string? method {  get; set; }
-	}
+        public string? method { get; set; }
+        public string? rel { get; set; }
+        public string? href { get; set; }
+    }
 }

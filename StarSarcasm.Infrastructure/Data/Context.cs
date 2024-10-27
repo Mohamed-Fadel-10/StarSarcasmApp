@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using StarSarcasm.Domain.Entities;
 using StarSarcasm.Domain.Entities.OTP;
 using StarSarcasm.Domain.Entities.Payments;
-using StarSarcasm.Domain.Entities.Payments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace StarSarcasm.Infrastructure.Data
 {
-    public class Context:IdentityDbContext<ApplicationUser>
+    public class Context:IdentityDbContext<ApplicationUser> 
     {
         public Context(DbContextOptions<Context> options):base(options)
         {
@@ -61,6 +60,9 @@ namespace StarSarcasm.Infrastructure.Data
                .Property(c => c.Id)
                .ValueGeneratedNever();
 
+            builder.Entity<Payment>()
+               .Property(p => p.Id)
+               .ValueGeneratedNever();
 
             builder.Entity<ChatMessages>()
            .HasOne(c => c.Sender)
@@ -106,7 +108,6 @@ namespace StarSarcasm.Infrastructure.Data
         public DbSet<Draw> Draws { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Payment> Payments { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<UsersDraws> UsersDraws { get; set; }
@@ -114,6 +115,9 @@ namespace StarSarcasm.Infrastructure.Data
         public DbSet<OTP> OTP { get; set; }
         public DbSet<Chat> Chat { get; set; }
         public DbSet<UsersChats> UsersChats { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+
         public DbSet<ChatMessages> ChatMessages { get; set; }
+
     }
 }

@@ -180,7 +180,7 @@ namespace StarSarcasm.Infrastructure.Services
 
         }
 
-		public async Task<ResponseModel> UpdateAsync(string id, UserDTO dto)
+		public async Task<ResponseModel> UpdateAsync(string id, UpdateUserDTO dto)
         {
             try
             {

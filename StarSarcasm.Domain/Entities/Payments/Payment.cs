@@ -16,8 +16,8 @@ namespace StarSarcasm.Domain.Entities.Payments
         public string? Email { get; set; }
         public string? Amount { get; set; }
         public string? Currency { get; set; }
-        public string? Status { get; set; }
         public string? MerchantId { get; set; }
+        public string? Status { get; set; }
         public DateTime? CreateTime { get; set; }
         public DateTime? UpdateTime { get; set; }
         public List<LinkModel>? Links;
