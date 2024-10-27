@@ -47,47 +47,58 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task<ResponseModel> AddAsync(DrawDTO dto)
         {
-            if (dto != null)
+            if (dto == null)
             {
-                string filename = string.Empty;
-
-                if (dto.file != null)
-                {
-                    filename = await _fileUpload.SaveFileAsync(dto.file);
-                }
-
-                string imagePath = string.IsNullOrEmpty(filename) ? null : _fileUpload.GetFilePath(filename);
-
-                var draw = new Draw()
-                {
-                    Name = dto.Name,
-                    Description = dto.Description ?? string.Empty,
-                    StartAt = dto.StartAt,
-                    EndAt = dto.EndAt,
-                    ImagePath = imagePath,
-                    SubscribersNumber=0
-                };
-
-                await _context.Draws.AddAsync(draw);
-                await _context.SaveChangesAsync();
-
-                return new ResponseModel
-                {
-                    IsSuccess = true,
-                    StatusCode = 200,
-                    Model = new
-                    {
-                        Draw = draw,
-                        Message = "Draw Added Successfully"
-                    }
-                };
+                return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Invalid Data" };
             }
 
-            return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Invalid Data" };
+            string imagePath = null;
+
+            if (dto.file != null)
+            {
+                try
+                {
+                    string filename = await _fileUpload.SaveFileAsync(dto.file, "DrawImages");
+                    imagePath = _fileUpload.GetFileUrl(filename);
+                }
+                catch (Exception)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 500,
+                        Message = "Error occurred while saving the image. Please try again later."
+                    };
+                }
+            }
+
+            var draw = new Draw
+            {
+                Name = dto.Name,
+                Description = dto.Description ?? string.Empty,
+                StartAt = dto.StartAt,
+                EndAt = dto.EndAt,
+                ImagePath = imagePath,
+                SubscribersNumber = 0
+            };
+
+            await _context.Draws.AddAsync(draw);
+            await _context.SaveChangesAsync();
+
+            return new ResponseModel
+            {
+                IsSuccess = true,
+                StatusCode = 200,
+                Model = new
+                {
+                    Draw = draw,
+                    Message = "Draw Added Successfully"
+                }
+            };
         }
 
 
-		public async Task<ResponseModel> RandomDrawWinner(int drawId)
+        public async Task<ResponseModel> RandomDrawWinner(int drawId)
         {
             try
             {
@@ -171,7 +182,7 @@ namespace StarSarcasm.Infrastructure.Services
 				{
 					filename = await _fileUpload.SaveFileAsync(dto.file);
 				}
-				string imagePath = string.IsNullOrEmpty(filename) ? null : _fileUpload.GetFilePath(filename);
+				string imagePath = string.IsNullOrEmpty(filename) ? null : _fileUpload.GetFileUrl(filename);
 
 				var newDraw = new Draw
                 {

@@ -9,7 +9,7 @@ namespace StarSarcasm.Application.Interfaces.IFileUploadService
 {
     public interface IFileUploadService
     {
-        public Task<string> SaveFileAsync(IFormFile file);
-        public string GetFilePath(string fileName);
+        public Task<string> SaveFileAsync(IFormFile file, string folderName = "general");
+        public string GetFileUrl(string path);
     }
 }
