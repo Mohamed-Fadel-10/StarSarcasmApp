@@ -19,6 +19,7 @@ namespace StarSarcasm.Application.Interfaces
         public Task<ResponseModel> DeleteAsync(int id);
         public Task<ResponseModel> GetAllSubscribers(int id);
         public Task<ResponseModel> GetLastFourDraws();
+        public Task<ResponseModel> GetAll();
 
     }
 }
