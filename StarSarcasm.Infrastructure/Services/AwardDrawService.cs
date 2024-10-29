@@ -102,6 +102,17 @@ namespace StarSarcasm.Infrastructure.Services
         {
             try
             {
+                var hasDrawWinner = _context.Draws.Where(d => d.Id == drawId)
+                    .Any(d => d.UsersDraws.Any(ud => ud.IsWinner));
+                if (hasDrawWinner)
+                {
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "تم اعلان الفائز لهذا السحب من قبل"
+                    };
+                }
 
                 var oneMonthAgo = DateTime.Now.AddMonths(-1);
                 Random random = new();
@@ -323,6 +334,37 @@ namespace StarSarcasm.Infrastructure.Services
             }
         }
 
+        public async Task<ResponseModel> GetAll()
+        {
+            var draws = await _context.Draws
+                .Join(_context.UsersDraws,
+                    d => d.Id,
+                    ud => ud.DrawId,
+                    (d, ud) => new { Draw = d, UserDraws = ud })
+                .OrderBy(d => d.Draw.EndAt)
+                .Select(u => new {
+                    UserId = u.UserDraws.User.Id,
+                    UserName = u.UserDraws.User.Name,
+                    Email = u.UserDraws.User.Email,
+                    IsUserWinner = true,
+                    DrawId = u.Draw.Id,
+                    DrawName = u.Draw.Name,
+                    DrawEndDate = u.Draw.EndAt,
+                    LastWinDate = u.UserDraws.LastWinDate
+                })
+                .ToListAsync();
+
+            return draws.Any() ?
+                new ResponseModel { IsSuccess = true, Model = draws, StatusCode = 200 } :
+                new ResponseModel 
+                { 
+                    IsSuccess = false,
+                    Model = new List<Draw>(),
+                    StatusCode = 204,
+                    Message="لا يوجد أي سحب من قبل"
+                };
+        }
+
         //  Last 4 draws and it's winners
 
         public async Task<ResponseModel> GetLastFourDraws()
@@ -336,7 +378,8 @@ namespace StarSarcasm.Infrastructure.Services
                 .OrderBy(d => d.Draw.EndAt)
                 .Take(4)
                 .Select(u => new {
-                    UserId = u.UserDraws.User.Name,
+                    UserId = u.UserDraws.User.Id,
+                    UserName = u.UserDraws.User.Name,
                     Email = u.UserDraws.User.Email,
                     IsUserWinner = true,
                     DrawId = u.Draw.Id,

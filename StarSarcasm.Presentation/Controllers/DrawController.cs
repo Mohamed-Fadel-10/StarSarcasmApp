@@ -87,6 +87,7 @@ namespace StarSarcasm.Presentation.Controllers
 			}
 			return StatusCode(response.StatusCode, response.Message);
 		}
+
         [HttpGet("GetLastFourDraws")]
         public async Task<IActionResult> GetLastFourDraws()
         {
@@ -96,5 +97,13 @@ namespace StarSarcasm.Presentation.Controllers
                 StatusCode(response.StatusCode, response.Model);
         }
 
+        [HttpGet("GetAllDraws")]
+        public async Task<IActionResult> GetAll()
+        {
+            var response = await _awardDrawService.GetAll();
+            return response.IsSuccess ?
+                StatusCode(response.StatusCode, response.Model) :
+                StatusCode(response.StatusCode, response.Message);
+        }
     }
 }
