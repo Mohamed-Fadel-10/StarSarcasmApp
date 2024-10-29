@@ -164,7 +164,7 @@ namespace StarSarcasm.Infrastructure.Services
                     {
                         UserId = user.Id,
                         IsSubscribed = user.IsSubscribed,
-                        UserName = user.UserName,
+                        UserName = user.Name,
                         Longitude = user.Longitude,
                         Latitude= user.Latitude,
                         BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
