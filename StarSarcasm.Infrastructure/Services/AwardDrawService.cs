@@ -343,14 +343,22 @@ namespace StarSarcasm.Infrastructure.Services
                     (d, ud) => new { Draw = d, UserDraws = ud })
                 .OrderBy(d => d.Draw.EndAt)
                 .Select(u => new {
-                    UserId = u.UserDraws.User.Id,
-                    UserName = u.UserDraws.User.Name,
-                    Email = u.UserDraws.User.Email,
-                    IsUserWinner = true,
                     DrawId = u.Draw.Id,
                     DrawName = u.Draw.Name,
+                    DrawDescription=u.Draw.Description,
+                    DrawStartAt= u.Draw.StartAt,
                     DrawEndDate = u.Draw.EndAt,
-                    LastWinDate = u.UserDraws.LastWinDate
+                    IsActive=u.Draw.IsActive,
+                    IMagePathe=u.Draw.ImagePath,
+                    SubcribersNumber=u.Draw.SubscribersNumber,
+                    User =new 
+                    {
+                        UserId = u.UserDraws.User.Id,
+                        UserName = u.UserDraws.User.Name,
+                        Email = u.UserDraws.User.Email,
+                        LastWinDate = u.UserDraws.LastWinDate,
+                    }
+                   
                 })
                 .ToListAsync();
 
@@ -378,14 +386,22 @@ namespace StarSarcasm.Infrastructure.Services
                 .OrderBy(d => d.Draw.EndAt)
                 .Take(4)
                 .Select(u => new {
-                    UserId = u.UserDraws.User.Id,
-                    UserName = u.UserDraws.User.Name,
-                    Email = u.UserDraws.User.Email,
-                    IsUserWinner = true,
                     DrawId = u.Draw.Id,
                     DrawName = u.Draw.Name,
+                    DrawDescription = u.Draw.Description,
+                    DrawStartAt = u.Draw.StartAt,
                     DrawEndDate = u.Draw.EndAt,
-                    LastWinDate = u.UserDraws.LastWinDate
+                    IsActive = u.Draw.IsActive,
+                    IMagePathe = u.Draw.ImagePath,
+                    SubcribersNumber = u.Draw.SubscribersNumber,
+                    User = new
+                    {
+                        UserId = u.UserDraws.User.Id,
+                        UserName = u.UserDraws.User.Name,
+                        Email = u.UserDraws.User.Email,
+                        LastWinDate = u.UserDraws.LastWinDate,
+                    }
+
                 })
                 .ToListAsync();
 
