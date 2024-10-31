@@ -347,11 +347,11 @@ namespace StarSarcasm.Infrastructure.Services
                     ImagePath = d.ImagePath,
                     SubscribersNumber = d.SubscribersNumber,
                     IsActive = d.IsActive,
-                    Winner = d.UsersDraws.Where(ud => ud.IsWinner)
+                    User = d.UsersDraws.Where(ud => ud.IsWinner)
                     .Select(ud => new WinnerDTO
                     {
                         UserId = ud.UserId,
-                        UserName = ud.User.Name,
+                        Name = ud.User.Name,
                         Email = ud.User.Email,
                         BirthDate = ud.User.BirthDate,
                         LastWinDate = ud.LastWinDate,
@@ -386,11 +386,11 @@ namespace StarSarcasm.Infrastructure.Services
                     ImagePath = d.ImagePath,
                     SubscribersNumber = d.SubscribersNumber,
                     IsActive = d.IsActive,
-                    Winner = d.UsersDraws.Where(ud => ud.IsWinner)
+                    User = d.UsersDraws.Where(ud => ud.IsWinner)
                     .Select(ud => new WinnerDTO
                     {
                         UserId = ud.UserId,
-                        UserName = ud.User.Name,
+                        Name = ud.User.Name,
                         Email = ud.User.Email,
                         BirthDate = ud.User.BirthDate,
                         LastWinDate = ud.LastWinDate,
