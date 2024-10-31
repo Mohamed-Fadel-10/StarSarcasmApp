@@ -1,6 +1,7 @@
 ﻿using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -8,34 +9,44 @@ namespace StarSarcasm.Infrastructure.Services
 {
     public class FirebaseNotificationService
     {
-        //public FirebaseNotificationService()
-        //{
-        //    if (FirebaseApp.DefaultInstance == null)
-        //    {
-        //        string basePath = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.Parent.FullName;
-        //        string pathToServiceAccountKey = Path.Combine(basePath, "StarSarcasm.Infrastructure", "Notifications", "starsarcasm-1ca16-firebase-adminsdk-y3bpu-cc2b9f8976.json");
+        private readonly IWebHostEnvironment _env;
 
-        //        FirebaseApp.Create(new AppOptions()
-        //        {
-        //            Credential = GoogleCredential.FromFile(pathToServiceAccountKey),
-        //        });
-        //    }
-        //}
+        public FirebaseNotificationService(IWebHostEnvironment env)
+        {
+            _env = env;
 
+            if (FirebaseApp.DefaultInstance == null)
+            {
+                string pathToJson = Path.Combine(_env.ContentRootPath, "wwwroot", "hazzy-7afb2-firebase-adminsdk-xki91-b344c342c9.json");
 
-        //public async Task SendNotification(string token, string title, string body)
-        //{
-        //    var message = new Message()
-        //    {
-        //        Token = token,
-        //        Notification = new Notification
-        //        {
-        //            Title = title,
-        //            Body = body
-        //        }
-        //    };
+                FirebaseApp.Create(new AppOptions()
+                {
+                    Credential = GoogleCredential.FromFile(pathToJson)
+                });
+            }
+        }
 
-        //    string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
-        //}
+        public async Task SendNotificationAsync(string deviceToken, string title, string body)
+        {
+            var message = new Message()
+            {
+                Token = deviceToken,
+                Notification = new Notification()
+                {
+                    Title = title,
+                    Body = body
+                }
+            };
+
+            try
+            {
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                Console.WriteLine("Successfully sent message: " + response);
+            }
+            catch (FirebaseMessagingException ex)
+            {
+                Console.WriteLine("Error sending message: " + ex.Message);
+            }
+        }
     }
 }

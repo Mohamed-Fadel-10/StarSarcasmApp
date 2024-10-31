@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Firebase\FirebaseConfiguration\" />
     <Folder Include="Notifications\" />
     <Folder Include="UOW\" />
     <Folder Include="Repositories\" />

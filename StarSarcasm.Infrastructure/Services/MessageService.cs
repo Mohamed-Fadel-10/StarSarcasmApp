@@ -16,10 +16,12 @@ namespace StarSarcasm.Infrastructure.Services
     public class MessageService:IMessageService
     {
         private readonly Context _context;
+        private readonly FirebaseNotificationService _firebaseNotificationService;
 
         public MessageService(Context context, FirebaseNotificationService firebaseNotificationService)
         {
             _context = context;
+            _firebaseNotificationService = firebaseNotificationService;
         }
 
         public async Task<List<Message>> GetRandomMessages(int count)
@@ -49,17 +51,26 @@ namespace StarSarcasm.Infrastructure.Services
             {
                 foreach (var message in messages)
                 {
-                    await _context.UsersMessages
-                        .AddAsync(new UsersMessages
-                        {
-                            MessageId = message.Id,
-                            UserId = user.Id,
-                            SendAt=DateTime.Now,
-                        });
+                    await _context.UsersMessages.AddAsync(new UsersMessages
+                    {
+                        MessageId = message.Id,
+                        UserId = user.Id,
+                        SendAt = DateTime.Now,
+                    });
+
+                    if (!string.IsNullOrEmpty(user.FcmToken))
+                    {
+                        await _firebaseNotificationService.SendNotificationAsync(
+                            user.FcmToken,
+                            "New Message",
+                            message.Content
+                        );
+                    }
                 }
             }
+
             await _context.SaveChangesAsync();
-            return new ResponseModel { IsSuccess = true, Message = "Messages Sent Successfully" };
+            return new ResponseModel { IsSuccess = true, Message = "Messages Sent and Notifications Sent Successfully" };
         }
 
         public async Task SendMessagesToSubscribedUsers()
