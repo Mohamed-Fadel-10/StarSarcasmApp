@@ -45,6 +45,20 @@ namespace StarSarcasm.Infrastructure.Services
         {
             try
             {
+                var isActiveDraw = _context.Draws
+	                .AsEnumerable()
+	                .Any(d => d.Id == drawId && d.IsActive);
+
+				if (!isActiveDraw)
+                {
+					return new ResponseModel
+					{
+						Message = "هذا السحب غير موجود حاليا",
+						IsSuccess = false,
+						StatusCode = 404,
+					};
+				}
+
                 var isInDraw = _context.UsersDraws.Any(ud => ud.DrawId == drawId && ud.UserId == userId);
                 if (isInDraw)
                 {

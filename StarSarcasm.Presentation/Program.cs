@@ -93,6 +93,8 @@ builder.Services.AddScoped<MessageScheduler>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<UserCleanUpService>();
 builder.Services.AddScoped<UserCleanUpScheduler>();
+builder.Services.AddScoped<AwardDrawService>();
+builder.Services.AddScoped<DrawScheduler>();
 
 //Firebase Services 
 builder.Services.AddScoped<FirebaseNotificationService>();
@@ -177,11 +179,13 @@ using (var scope = app.Services.CreateScope())
 {
     var messageScheduler = scope.ServiceProvider.GetRequiredService<MessageScheduler>();
     var userCleanUpScheduler = scope.ServiceProvider.GetRequiredService<UserCleanUpScheduler>();
+	var drawScheduler = scope.ServiceProvider.GetRequiredService<DrawScheduler>();
 
-    messageScheduler.ScheduleMessagesForUnsubscribedUsers();
+	messageScheduler.ScheduleMessagesForUnsubscribedUsers();
     messageScheduler.ScheduleMessagesForSubscribedUsers();
     //messageScheduler.ScheduleMessagesForSubscribedUsersTest();
     userCleanUpScheduler.UserCleanUp();
+	drawScheduler.ScheduleDrawEnd();
 }
 app.UseCors();
 app.MapHub<ChatHub>("/ChatHub");

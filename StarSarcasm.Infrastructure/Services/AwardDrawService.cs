@@ -42,7 +42,7 @@ namespace StarSarcasm.Infrastructure.Services
                 
                 return new ResponseModel { IsSuccess=true ,Model= draw, StatusCode=200};
             }
-            return new ResponseModel { IsSuccess = false, StatusCode = 404,Message="No Draws Available Now" };
+            return new ResponseModel { IsSuccess = false, StatusCode = 404,Message="لا يوجد اي سحب حاليا" };
         }
 
         public async Task<ResponseModel> AddAsync(DrawDTO dto)
@@ -102,8 +102,18 @@ namespace StarSarcasm.Infrastructure.Services
         {
             try
             {
-                var hasDrawWinner = _context.Draws.Where(d => d.Id == drawId)
-                    .Any(d => d.UsersDraws.Any(ud => ud.IsWinner));
+                var draw = _context.Draws.Find(drawId);
+                if(draw==null)
+                {
+					return new ResponseModel
+					{
+						IsSuccess = false,
+						StatusCode = 404,
+						Message = "هذا السحب غير موجود"
+					};
+				}
+
+                var hasDrawWinner = draw.UsersDraws.Any(ud => ud.IsWinner);
                 if (hasDrawWinner)
                 {
                     return new ResponseModel
@@ -143,7 +153,10 @@ namespace StarSarcasm.Infrastructure.Services
                 var winner = drawSubscribers[winnerIndex];
                 winner.IsWinner = true;
                 winner.LastWinDate = DateTime.Now;
+                draw.EndAt = DateTime.Now;
+
                 _context.UsersDraws.Update(winner);
+                _context.Draws.Update(draw);
                 _context.SaveChanges();
 
                 var user = await _context.Users.FindAsync(winner.UserId);
@@ -172,6 +185,21 @@ namespace StarSarcasm.Infrastructure.Services
             }
 
         }
+
+        public async Task EndDrawIfNoWinner()
+        {
+            //get last recent active draw with no winner
+            var lastActiveDraw = await _context.Draws.Include(d => d.UsersDraws)
+				.Where(d => d.EndAt <= DateTime.Now)
+		        .Where(d => DateTime.Now <= d.EndAt.AddHours(1))
+	            .Where(d=>!d.UsersDraws.Any(ud=>ud.IsWinner))
+                .OrderByDescending(d=>d.EndAt).FirstOrDefaultAsync();
+             
+            if(lastActiveDraw != null&&DateTime.Now>= lastActiveDraw.EndAt)
+            {
+                await RandomDrawWinner(lastActiveDraw.Id);
+            }
+		}
 
 		public async Task<ResponseModel> UpdateAsync(int id,DrawDTO dto)
         {
