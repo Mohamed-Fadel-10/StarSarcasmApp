@@ -164,7 +164,7 @@ namespace StarSarcasm.Infrastructure.Services
                     {
                         UserId = user.Id,
                         IsSubscribed = user.IsSubscribed,
-                        UserName = user.Name,
+                        Name = user.Name,
                         Longitude = user.Longitude,
                         Latitude= user.Latitude,
                         BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
@@ -357,7 +357,7 @@ namespace StarSarcasm.Infrastructure.Services
                         Model = new
                         {
                             IsAuthenticated = false,
-                            UserName = string.Empty,
+                            Name = string.Empty,
                             Roles = new List<string>(),
                             Token = string.Empty,
                             RefreshToken = string.Empty,
@@ -381,7 +381,7 @@ namespace StarSarcasm.Infrastructure.Services
                     Model = new
                     {
                         IsAuthenticated = true,
-                        UserName = user.UserName,
+                        Name = user.Name,
                         Roles = Roles.ToList(),
                         Token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
                         RefreshToken = newRefreshToken.Token,

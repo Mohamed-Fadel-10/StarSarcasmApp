@@ -236,8 +236,8 @@ namespace StarSarcasm.Infrastructure.Services
                             // not return the current user in the list
                             continue;
                         }
-                        var distance=await CalculateDistance(currentUser.Latitude,currentUser.Longitude
-                            ,user.Latitude,user.Longitude);
+                        var distance=await CalculateDistance(double.Parse( currentUser.Latitude), double.Parse(currentUser.Longitude)
+                            , double.Parse(user.Latitude), double.Parse(user.Longitude));
 
                         var userChat = new UserChatDTO
                         {
@@ -248,8 +248,7 @@ namespace StarSarcasm.Infrastructure.Services
                             FcmToken = user.FcmToken,
                             Longitude = user.Longitude,
                             Latitude = user.Latitude,
-                            Distance = distance,
-                           // Location = user.Location
+                            Distance = distance.ToString(),
                         };
                         nearestUsers.Add(userChat);
                         

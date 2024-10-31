@@ -14,9 +14,8 @@ namespace StarSarcasm.Application.DTOs
         public DateTime CreatedAt { get; set; }
         public string ReceiverId { get; set; }
         public string FcmToken { get; set; }
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
-        public string Location { get; set; }
-        public double Distance { get; set; }
+        public string Longitude { get; set; }
+        public string Latitude { get; set; }
+        public string Distance { get; set; }
     }
 }

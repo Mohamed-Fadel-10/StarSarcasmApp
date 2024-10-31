@@ -343,22 +343,22 @@ namespace StarSarcasm.Infrastructure.Services
                     (d, ud) => new { Draw = d, UserDraws = ud })
                 .OrderBy(d => d.Draw.EndAt)
                 .Select(u => new {
-                    DrawId = u.Draw.Id,
-                    DrawName = u.Draw.Name,
-                    DrawDescription=u.Draw.Description,
-                    DrawStartAt= u.Draw.StartAt,
-                    DrawEndDate = u.Draw.EndAt,
-                    IsActive=u.Draw.IsActive,
-                    IMagePathe=u.Draw.ImagePath,
-                    SubcribersNumber=u.Draw.SubscribersNumber,
-                    User =new 
+                    Id = u.Draw.Id,
+                    Name = u.Draw.Name,
+                    Description = u.Draw.Description,
+                    StartAt = u.Draw.StartAt,
+                    EndAt = u.Draw.EndAt,
+                    IsActive = u.Draw.EndAt < DateTime.UtcNow ? false : true,
+                    ImagePath = u.Draw.ImagePath,
+                    SubscribersNumber = u.Draw.SubscribersNumber,
+                    User = new
                     {
                         UserId = u.UserDraws.User.Id,
-                        UserName = u.UserDraws.User.Name,
+                        Name = u.UserDraws.User.Name,
                         Email = u.UserDraws.User.Email,
                         LastWinDate = u.UserDraws.LastWinDate,
                     }
-                   
+
                 })
                 .ToListAsync();
 
@@ -386,18 +386,18 @@ namespace StarSarcasm.Infrastructure.Services
                 .OrderBy(d => d.Draw.EndAt)
                 .Take(4)
                 .Select(u => new {
-                    DrawId = u.Draw.Id,
-                    DrawName = u.Draw.Name,
-                    DrawDescription = u.Draw.Description,
-                    DrawStartAt = u.Draw.StartAt,
-                    DrawEndDate = u.Draw.EndAt,
-                    IsActive = u.Draw.IsActive,
-                    IMagePathe = u.Draw.ImagePath,
-                    SubcribersNumber = u.Draw.SubscribersNumber,
+                    Id = u.Draw.Id,
+                    Name = u.Draw.Name,
+                    Description = u.Draw.Description,
+                    StartAt = u.Draw.StartAt,
+                    EndAt = u.Draw.EndAt,
+                    IsActive = u.Draw.EndAt < DateTime.UtcNow ? false : true,
+                    ImagePath = u.Draw.ImagePath,
+                    SubscribersNumber = u.Draw.SubscribersNumber,
                     User = new
                     {
                         UserId = u.UserDraws.User.Id,
-                        UserName = u.UserDraws.User.Name,
+                        Name = u.UserDraws.User.Name,
                         Email = u.UserDraws.User.Email,
                         LastWinDate = u.UserDraws.LastWinDate,
                     }

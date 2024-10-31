@@ -30,8 +30,8 @@ namespace StarSarcasm.Application.DTOs.Register
         [Compare("Password",ErrorMessage ="كلمة السر غير متطابقة")]
         public string ConfirmPassword { get; set; }
 
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
+        public string Longitude { get; set; }
+        public string Latitude { get; set; }
 
     }
 }

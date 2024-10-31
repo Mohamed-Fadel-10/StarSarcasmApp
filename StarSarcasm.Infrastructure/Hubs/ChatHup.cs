@@ -175,7 +175,7 @@ namespace StarSarcasm.Infrastructure.Hubs
 
                 chat = new Chat
                 {
-                    Id = $"{model.SenderId}-{model.ReciverId}",
+                    Id = $"{model.SenderId}%{model.ReciverId}",
                     SenderChatName = sender.Name,
                     ReciverChatName = receiver.Name,
                     CreatedAt = DateTime.Now,
