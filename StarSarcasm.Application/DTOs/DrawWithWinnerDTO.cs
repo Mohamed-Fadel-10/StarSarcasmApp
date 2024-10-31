@@ -19,13 +19,13 @@ namespace StarSarcasm.Application.DTOs
 		public int SubscribersNumber { get; set; }
 		public bool IsActive { get; set; }
 
-		public WinnerDTO? Winner { get; set; }
+		public WinnerDTO? User { get; set; }
 	}
 
 	public class WinnerDTO
 	{
 		public string UserId { get; set; }
-		public string UserName { get; set; }
+		public string Name { get; set; }
 		public string Email { get; set; }
 		public DateTime BirthDate { get; set; }
 		public DateTime? LastWinDate { get; set; }

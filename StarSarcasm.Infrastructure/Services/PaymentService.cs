@@ -47,6 +47,12 @@ namespace StarSarcasm.Infrastructure.Services
 						Links = dto.Links,
 						UserId = userId
 					};
+
+					if (user.IsSubscribed == false)
+					{
+						user.IsSubscribed = true;
+					}
+					
 					await _context.Payments.AddAsync(payment);
 					await _context.SaveChangesAsync();
 
