@@ -337,28 +337,26 @@ namespace StarSarcasm.Infrastructure.Services
         public async Task<ResponseModel> GetAll()
         {
             var draws = await _context.Draws
-                .Join(_context.UsersDraws,
-                    d => d.Id,
-                    ud => ud.DrawId,
-                    (d, ud) => new { Draw = d, UserDraws = ud })
-                .OrderBy(d => d.Draw.EndAt)
-                .Select(u => new {
-                    Id = u.Draw.Id,
-                    Name = u.Draw.Name,
-                    Description = u.Draw.Description,
-                    StartAt = u.Draw.StartAt,
-                    EndAt = u.Draw.EndAt,
-                    IsActive = u.Draw.EndAt < DateTime.UtcNow ? false : true,
-                    ImagePath = u.Draw.ImagePath,
-                    SubscribersNumber = u.Draw.SubscribersNumber,
-                    User = new
+                .Select(d => new DrawWithWinnerDTO
+                {
+                    Id = d.Id,
+                    Name = d.Name,
+                    Description = d.Description,
+                    StartAt = d.StartAt,
+                    EndAt = d.EndAt,
+                    ImagePath = d.ImagePath,
+                    SubscribersNumber = d.SubscribersNumber,
+                    IsActive = d.IsActive,
+                    Winner = d.UsersDraws.Where(ud => ud.IsWinner)
+                    .Select(ud => new WinnerDTO
                     {
-                        UserId = u.UserDraws.User.Id,
-                        Name = u.UserDraws.User.Name,
-                        Email = u.UserDraws.User.Email,
-                        LastWinDate = u.UserDraws.LastWinDate,
-                    }
-
+                        UserId = ud.UserId,
+                        UserName = ud.User.Name,
+                        Email = ud.User.Email,
+                        BirthDate = ud.User.BirthDate,
+                        LastWinDate = ud.LastWinDate,
+                        IsSubscribed = ud.User.IsSubscribed
+                    }).FirstOrDefault()
                 })
                 .ToListAsync();
 
@@ -368,7 +366,7 @@ namespace StarSarcasm.Infrastructure.Services
                 { 
                     IsSuccess = false,
                     Model = new List<Draw>(),
-                    StatusCode = 204,
+                    StatusCode = 404,
                     Message="لا يوجد أي سحب من قبل"
                 };
         }
@@ -377,32 +375,28 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task<ResponseModel> GetLastFourDraws()
         {
-            var draws = await _context.Draws
-                .Join(_context.UsersDraws,
-                    d => d.Id,
-                    ud => ud.DrawId,
-                    (d, ud) => new { Draw = d, UserDraws = ud })
-                .Where(d => d.UserDraws.IsWinner == true)
-                .OrderBy(d => d.Draw.EndAt)
-                .Take(4)
-                .Select(u => new {
-                    Id = u.Draw.Id,
-                    Name = u.Draw.Name,
-                    Description = u.Draw.Description,
-                    StartAt = u.Draw.StartAt,
-                    EndAt = u.Draw.EndAt,
-                    IsActive = u.Draw.EndAt < DateTime.UtcNow ? false : true,
-                    ImagePath = u.Draw.ImagePath,
-                    SubscribersNumber = u.Draw.SubscribersNumber,
-                    User = new
+             var draws = await _context.Draws
+                .Select(d => new DrawWithWinnerDTO
+                {
+                    Id = d.Id,
+                    Name = d.Name,
+                    Description = d.Description,
+                    StartAt = d.StartAt,
+                    EndAt = d.EndAt,
+                    ImagePath = d.ImagePath,
+                    SubscribersNumber = d.SubscribersNumber,
+                    IsActive = d.IsActive,
+                    Winner = d.UsersDraws.Where(ud => ud.IsWinner)
+                    .Select(ud => new WinnerDTO
                     {
-                        UserId = u.UserDraws.User.Id,
-                        Name = u.UserDraws.User.Name,
-                        Email = u.UserDraws.User.Email,
-                        LastWinDate = u.UserDraws.LastWinDate,
-                    }
-
-                })
+                        UserId = ud.UserId,
+                        UserName = ud.User.Name,
+                        Email = ud.User.Email,
+                        BirthDate = ud.User.BirthDate,
+                        LastWinDate = ud.LastWinDate,
+                        IsSubscribed = ud.User.IsSubscribed
+                    }).FirstOrDefault()
+                }).OrderByDescending(d=>d.EndAt).Take(4)
                 .ToListAsync();
 
             return draws.Any() ?
