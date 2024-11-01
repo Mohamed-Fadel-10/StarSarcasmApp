@@ -379,7 +379,7 @@ namespace StarSarcasm.Infrastructure.Services
                         LastWinDate = ud.LastWinDate,
                         IsSubscribed = ud.User.IsSubscribed
                     }).FirstOrDefault()
-                })
+                }).OrderByDescending(d=>d.EndAt)
                 .ToListAsync();
 
             return draws.Any() ?
