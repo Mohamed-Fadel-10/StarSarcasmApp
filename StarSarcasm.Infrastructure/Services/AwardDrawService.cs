@@ -47,6 +47,16 @@ namespace StarSarcasm.Infrastructure.Services
 
         public async Task<ResponseModel> AddAsync(DrawDTO dto)
         {
+            if(_context.Draws.Any(d=> DateTime.Now >= d.StartAt && DateTime.Now <= d.EndAt))
+            {
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 400,
+                    Message = "لا يمكنك اضافة سحب حتى ينتهي الموجود حاليا"
+                };
+            }
+
             if (dto == null)
             {
                 return new ResponseModel { IsSuccess = false, StatusCode = 400, Message = "Invalid Data" };

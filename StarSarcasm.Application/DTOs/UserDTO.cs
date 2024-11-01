@@ -17,5 +17,6 @@ namespace StarSarcasm.Application.DTOs
         public string BirthDate { get; set; }
         public string Longitude { get; set; }
         public string Latitude { get; set; }
+        public bool? IsLoggedIn { get; set; }
     }
 }

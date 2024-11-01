@@ -186,7 +186,47 @@ namespace StarSarcasm.Infrastructure.Services
             }
         }
 
-        public async Task<ResponseModel> VerifyOTP(string email, string otpCode)
+		public async Task<ResponseModel> LogOutAsync(string userId)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if(user == null)
+                {
+					return new ResponseModel
+					{
+						IsSuccess = false,
+						StatusCode = 404,
+						Message = "المستخدم غير موجود"
+					};
+				}
+
+                var tokens = user.RefreshTokens.Where(t => !t.IsExpired);
+				foreach (var token in tokens)
+                {
+                    token.ExpiresOn = DateTime.Now;
+                }
+                await _userManager.UpdateAsync(user);
+
+				return new ResponseModel
+				{
+					IsSuccess = true,
+					StatusCode = 200,
+					Message = "تم تسجيل الخروج بنجاح"
+				};
+			}
+			catch (Exception)
+			{
+				return new ResponseModel
+				{
+					IsSuccess = false,
+					StatusCode = 500,
+					Message = "حدث خطأ غير متوقع، يرجى المحاولة لاحقًا"
+				};
+			}
+		}
+
+		public async Task<ResponseModel> VerifyOTP(string email, string otpCode)
         {
             try
             {

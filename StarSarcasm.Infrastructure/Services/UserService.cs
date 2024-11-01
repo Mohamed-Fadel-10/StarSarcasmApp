@@ -141,6 +141,7 @@ namespace StarSarcasm.Infrastructure.Services
                     {
                         if (user.BirthDate.Day == zodiacNum)
                         {
+                            var isLoggedIn = user.RefreshTokens.Any(r => r.IsActive);
                             var dto = new UserDTO
                             {
                                 Id=user.Id,
@@ -151,6 +152,7 @@ namespace StarSarcasm.Infrastructure.Services
                                 BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
                                 Longitude=user.Longitude,
                                 Latitude=user.Latitude,
+                                IsLoggedIn=isLoggedIn,
                             };
                             users.Add(dto);
                         }
@@ -238,7 +240,7 @@ namespace StarSarcasm.Infrastructure.Services
                         }
                         var distance=await CalculateDistance(double.Parse( currentUser.Latitude), double.Parse(currentUser.Longitude)
                             , double.Parse(user.Latitude), double.Parse(user.Longitude));
-
+                        
                         var userChat = new UserChatDTO
                         {
                             ChatId = null,
@@ -249,6 +251,7 @@ namespace StarSarcasm.Infrastructure.Services
                             Longitude = user.Longitude,
                             Latitude = user.Latitude,
                             Distance = distance.ToString(),
+                            IsLoggedIn=user.IsLoggedIn,
                         };
                         nearestUsers.Add(userChat);
                         

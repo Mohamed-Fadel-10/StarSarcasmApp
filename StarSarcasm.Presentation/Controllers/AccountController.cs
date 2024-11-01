@@ -57,7 +57,18 @@ namespace StarSarcasm.Presentation.Controllers
             return BadRequest(ModelState);
         }
 
-        [HttpPost("forgetpassword")]
+		[HttpPost("logout")]
+		public async Task<IActionResult> Logout(string userId)
+		{
+			var response = await _authService.LogOutAsync(userId);
+			if (response.IsSuccess)
+			{
+				return StatusCode(response.StatusCode, response.Message);
+			}
+			return StatusCode(response.StatusCode, response.Message);
+		}
+
+		[HttpPost("forgetpassword")]
         public async Task<IActionResult> ForgetPassword(string email)
         {
             if (!string.IsNullOrEmpty(email))

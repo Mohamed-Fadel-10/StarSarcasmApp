@@ -20,5 +20,6 @@ namespace StarSarcasm.Application.Interfaces
         public Task<ResponseModel> ForgetPassword(string email);
         public Task<ResponseModel> ChangePassword(ChangePasswordDTO dto);
         public Task<ResponseModel> NewRefreshToken(string token);
-    }
+        public Task<ResponseModel> LogOutAsync(string userId);
+	}
 }
