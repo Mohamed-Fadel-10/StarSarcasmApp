@@ -17,7 +17,7 @@ namespace StarSarcasm.Infrastructure.Services
 
             if (FirebaseApp.DefaultInstance == null)
             {
-                string pathToJson = Path.Combine(_env.ContentRootPath, "wwwroot", "hazzy-7afb2-firebase-adminsdk-xki91-b344c342c9.json");
+                string pathToJson = Path.Combine(_env.ContentRootPath, "wwwroot", "astrology-app-c4119-firebase-adminsdk-o64ak-5f6a6ee91c.json");
 
                 FirebaseApp.Create(new AppOptions()
                 {

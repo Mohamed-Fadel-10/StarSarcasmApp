@@ -18,14 +18,14 @@ namespace StarSarcasm.Domain.Entities
         public bool IsReaded { get; set; }
         public DateTime SendAt { get; set; }
         [ForeignKey("Sender")]
-        public string SenderId { get; set; }
+        public string? SenderId { get; set; }
         [ForeignKey("Reciver")]
-        public string ReciverId { get; set; }
+        public string? ReciverId { get; set; }
         [ForeignKey("Chat")]
         public string ChatId { get; set; }
 
-        public virtual ApplicationUser Sender { get; set; }
-        public virtual ApplicationUser Reciver { get; set; }
+        public virtual ApplicationUser? Sender { get; set; }
+        public virtual ApplicationUser? Reciver { get; set; }
 
         public virtual Chat Chat { get; set; }
 

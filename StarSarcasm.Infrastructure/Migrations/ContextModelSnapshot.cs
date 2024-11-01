@@ -295,14 +295,12 @@ namespace StarSarcasm.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ReciverId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("SendAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("SenderId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Type")
@@ -717,14 +715,12 @@ namespace StarSarcasm.Infrastructure.Migrations
                     b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "Reciver")
                         .WithMany("ReceivedMessages")
                         .HasForeignKey("ReciverId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("StarSarcasm.Domain.Entities.ApplicationUser", "Sender")
                         .WithMany("SentMessages")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Chat");
 

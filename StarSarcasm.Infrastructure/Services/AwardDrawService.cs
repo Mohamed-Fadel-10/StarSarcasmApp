@@ -58,8 +58,7 @@ namespace StarSarcasm.Infrastructure.Services
             {
                 try
                 {
-                    string filename = await _fileUpload.SaveFileAsync(dto.file, "DrawImages");
-                    imagePath = _fileUpload.GetFileUrl(filename);
+                    imagePath = await _fileUpload.SaveFileAsync(dto.file, "DrawImages");
                 }
                 catch (Exception)
                 {
@@ -185,21 +184,6 @@ namespace StarSarcasm.Infrastructure.Services
             }
 
         }
-
-        public async Task EndDrawIfNoWinner()
-        {
-            //get last recent active draw with no winner
-            var lastActiveDraw = await _context.Draws.Include(d => d.UsersDraws)
-				.Where(d => d.EndAt <= DateTime.Now)
-		        .Where(d => DateTime.Now <= d.EndAt.AddHours(1))
-	            .Where(d=>!d.UsersDraws.Any(ud=>ud.IsWinner))
-                .OrderByDescending(d=>d.EndAt).FirstOrDefaultAsync();
-             
-            if(lastActiveDraw != null&&DateTime.Now>= lastActiveDraw.EndAt)
-            {
-                await RandomDrawWinner(lastActiveDraw.Id);
-            }
-		}
 
 		public async Task<ResponseModel> UpdateAsync(int id,DrawDTO dto)
         {
@@ -432,6 +416,20 @@ namespace StarSarcasm.Infrastructure.Services
                 new ResponseModel { IsSuccess = false, Model = new List<Draw>(), StatusCode = 404 };
         }
 
+        public async Task EndDrawIfNoWinner()
+        {
+            //get last recent active draw with no winner
+            var lastActiveDraw = await _context.Draws.Include(d => d.UsersDraws)
+                .Where(d => d.EndAt <= DateTime.Now)
+                .Where(d => DateTime.Now <= d.EndAt.AddHours(1))
+                .Where(d => !d.UsersDraws.Any(ud => ud.IsWinner))
+                .OrderByDescending(d => d.EndAt).FirstOrDefaultAsync();
+
+            if (lastActiveDraw != null && DateTime.Now >= lastActiveDraw.EndAt)
+            {
+                await RandomDrawWinner(lastActiveDraw.Id);
+            }
+        }
     }
 
 }
