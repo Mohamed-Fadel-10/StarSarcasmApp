@@ -180,7 +180,7 @@ namespace StarSarcasm.Infrastructure.Services
                         FcmToken = user.FcmToken,
                         Longitude = user.Longitude,
                         Latitude= user.Latitude,
-                        BirthDate = user.BirthDate.ToString("yyyy/mm/dd")
+                        BirthDate = user.BirthDate.ToString("yyyy-MM-dd HH:mm:ss")
                     },
                     Message = "مبارك للفائز ",
                     IsSuccess = true,
@@ -398,6 +398,7 @@ namespace StarSarcasm.Infrastructure.Services
         public async Task<ResponseModel> GetLastFourDraws()
         {
              var draws = await _context.Draws
+                .Where(d=>d.StartAt<=DateTime.Now)
                 .Select(d => new DrawWithWinnerDTO
                 {
                     Id = d.Id,
