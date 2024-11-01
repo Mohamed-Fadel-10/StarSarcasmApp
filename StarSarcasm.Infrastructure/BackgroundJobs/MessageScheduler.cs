@@ -45,7 +45,7 @@ namespace StarSarcasm.Infrastructure.BackgroundJobs
         //{
         //    RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
         //        () => _messageService.SendMessagesToUnSubscribedUsers(),
-        //        "* * * * *"); // هذا سيقوم بإرسال الرسائل كل دقيقة
+        //        "* * * * *");
         //}
 
 

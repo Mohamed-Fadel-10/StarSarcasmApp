@@ -21,11 +21,14 @@ namespace StarSarcasm.Infrastructure.Services
         public async Task<ResponseModel> GetUserChats(string id)
         {
             var chats = await _context.UsersChats
-                .Include(uc => uc.Chat)
-                .Include(uc => uc.Sender)
-                .Include(uc => uc.Receiver)
-                .Where(uc => uc.User1 == id || uc.User2 == id)
-                .ToListAsync();
+             .Include(uc => uc.Chat)
+             .ThenInclude(c => c.ChatMessages) 
+             .Include(uc => uc.Sender)
+             .Include(uc => uc.Receiver)
+             .Where(uc => uc.User1 == id || uc.User2 == id)
+             .OrderByDescending(uc => uc.Chat.ChatMessages
+                 .Max(cm => cm.SendAt))
+             .ToListAsync();
 
             if (chats.Count == 0)
             {

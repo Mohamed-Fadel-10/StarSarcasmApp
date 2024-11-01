@@ -68,14 +68,13 @@ namespace StarSarcasm.Infrastructure.Data
            .HasOne(c => c.Sender)
            .WithMany(u => u.SentMessages)
            .HasForeignKey(c => c.SenderId)
-           .OnDelete(DeleteBehavior.NoAction);
+           .OnDelete(DeleteBehavior.SetNull);
 
-            // Configuring the relationship between ApplicationUser and ChatMessages (Received Messages)
             builder.Entity<ChatMessages>()
                 .HasOne(c => c.Reciver)
                 .WithMany(u => u.ReceivedMessages)
                 .HasForeignKey(c => c.ReciverId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.Entity<ChatMessages>()
                 .HasOne(c => c.Chat)
