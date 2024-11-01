@@ -44,6 +44,7 @@ namespace StarSarcasm.Infrastructure.Services
             foreach (var chat in chats)
             {
                 var receiver = chat.User1 == id ? chat.Receiver : chat.Sender;
+                var isLoggedIn = receiver.RefreshTokens.Any(r => !r.IsExpired);
 
                 var chatName = chat.User1 == id ? chat.Chat.ReciverChatName : chat.Chat.SenderChatName;
 
@@ -56,6 +57,7 @@ namespace StarSarcasm.Infrastructure.Services
                     FcmToken =receiver.FcmToken,
                     Longitude=receiver.Longitude,
                     Latitude=receiver.Latitude,
+                    IsLoggedIn=isLoggedIn,
                 };
 
                 chatsDTO.Add(item);
