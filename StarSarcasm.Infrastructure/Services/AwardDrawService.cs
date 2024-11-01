@@ -22,13 +22,16 @@ namespace StarSarcasm.Infrastructure.Services
         private readonly IUserService _userService;
         private readonly IUserDrawService _userDrawService;
         private readonly IFileUploadService _fileUpload;
+        private readonly FirebaseNotificationService _firebaseNotificationService;
 
-        public AwardDrawService(Context context, IUserService userService, IUserDrawService userDrawService, IFileUploadService fileUpload)
+        public AwardDrawService(Context context, IUserService userService,
+            IUserDrawService userDrawService, IFileUploadService fileUpload, FirebaseNotificationService firebaseNotificationService)
         {
             _context = context;
             _userService = userService;
             _userDrawService = userDrawService;
             _fileUpload = fileUpload;
+            _firebaseNotificationService = firebaseNotificationService;
         }
 
         public async Task<ResponseModel> GetActiveDrawAsync()
@@ -163,12 +166,17 @@ namespace StarSarcasm.Infrastructure.Services
                 winner.IsWinner = true;
                 winner.LastWinDate = DateTime.Now;
                 draw.EndAt = DateTime.Now;
+                var user = await _context.Users.FindAsync(winner.UserId);
 
                 _context.UsersDraws.Update(winner);
                 _context.Draws.Update(draw);
                 _context.SaveChanges();
+                _firebaseNotificationService.SendNotificationAsync(
 
-                var user = await _context.Users.FindAsync(winner.UserId);
+                     user.FcmToken,
+                   "الجوائز",
+                   "تهانينا و لقد فزت معنا بالسحب");
+
                 return new ResponseModel
                 {
                     Model = new UserDTO
