@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
+using StarSarcasm.Application;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Application.Interfaces.IFileUploadService;
@@ -88,8 +89,8 @@ namespace StarSarcasm.Infrastructure.Services
             {
                 Name = dto.Name,
                 Description = dto.Description ?? string.Empty,
-                StartAt = dto.StartAt,
-                EndAt = dto.EndAt,
+                StartAt = dto.StartAt.ToUniversalTime(),
+                EndAt = dto.EndAt.ToUniversalTime(),
                 ImagePath = imagePath,
                 SubscribersNumber = 0
             };
@@ -104,7 +105,7 @@ namespace StarSarcasm.Infrastructure.Services
                 Model = new
                 {
                     Draw = draw,
-                    Message = "Draw Added Successfully"
+                    Message = "تم اضافة السحب بنجاح"
                 }
             };
         }
@@ -114,30 +115,28 @@ namespace StarSarcasm.Infrastructure.Services
         {
             try
             {
-                var draw = _context.Draws.Find(drawId);
-                if(draw==null)
+                var draw = await _context.Draws
+                    .Include(u=>u.UsersDraws)
+                    .FirstOrDefaultAsync(d=>d.Id==drawId);
+                if (draw == null)
                 {
-					return new ResponseModel
-					{
-						IsSuccess = false,
-						StatusCode = 404,
-						Message = "هذا السحب غير موجود"
-					};
-				}
+                    return new ResponseModel
+                    {
+                        IsSuccess = false,
+                        StatusCode = 404,
+                        Message = "هذا السحب غير موجود"
+                    };
+                }
 
-                var hasDrawWinner = draw.UsersDraws.Any(ud => ud.IsWinner);
-                if (hasDrawWinner)
+                if (draw.UsersDraws.Any(ud => ud.IsWinner))
                 {
                     return new ResponseModel
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "تم اعلان الفائز لهذا السحب من قبل"
+                        Message = "تم إعلان الفائز لهذا السحب من قبل"
                     };
                 }
-
-                var oneMonthAgo = DateTime.Now.AddMonths(-1);
-                Random random = new();
 
                 var allSubscribers = await _context.UsersDraws
                     .Where(ud => ud.DrawId == drawId)
@@ -147,35 +146,39 @@ namespace StarSarcasm.Infrastructure.Services
                 {
                     return new ResponseModel
                     {
-                        Message = "لا يوجد مشاركين في هذا السحب",
                         IsSuccess = false,
                         StatusCode = 404,
+                        Message = "لا يوجد مشاركين في هذا السحب"
                     };
                 }
 
-                var drawSubscribers = allSubscribers.Where(u => u.IsWinner == false
-                            || u.LastWinDate <= oneMonthAgo).ToList();
+                var oneMonthAgo = DateTime.Now.AddMonths(-1);
+                var eligibleSubscribers = allSubscribers
+                    .Where(u => !u.IsWinner || u.LastWinDate <= oneMonthAgo)
+                    .ToList();
 
-                if (!drawSubscribers.Any())
+                if (!eligibleSubscribers.Any())
                 {
-                    drawSubscribers = allSubscribers;
+                    eligibleSubscribers = allSubscribers;
                 }
 
-                var winnerIndex = random.Next(drawSubscribers.Count);
-                var winner = drawSubscribers[winnerIndex];
+                Random random = new();
+                var winnerIndex = random.Next(eligibleSubscribers.Count);
+                var winner = eligibleSubscribers[winnerIndex];
                 winner.IsWinner = true;
-                winner.LastWinDate = DateTime.Now;
-                draw.EndAt = DateTime.Now;
+                winner.LastWinDate = DateTime.UtcNow;
+                draw.EndAt = DateTime.UtcNow;
                 var user = await _context.Users.FindAsync(winner.UserId);
 
                 _context.UsersDraws.Update(winner);
                 _context.Draws.Update(draw);
-                _context.SaveChanges();
-                _firebaseNotificationService.SendNotificationAsync(
+                await _context.SaveChangesAsync();
 
-                     user.FcmToken,
-                   "الجوائز",
-                   "تهانينا و لقد فزت معنا بالسحب");
+                await _firebaseNotificationService.SendNotificationAsync(
+                    user.FcmToken,
+                    "الجوائز",
+                    "تهانينا! لقد فزت معنا في السحب 🎉"
+                );
 
                 return new ResponseModel
                 {
@@ -187,28 +190,31 @@ namespace StarSarcasm.Infrastructure.Services
                         IsSubscribed = user.IsSubscribed,
                         FcmToken = user.FcmToken,
                         Longitude = user.Longitude,
-                        Latitude= user.Latitude,
-                        BirthDate = user.BirthDate.ToString("yyyy-MM-dd HH:mm:ss")
+                        Latitude = user.Latitude,
+                        BirthDate = user.BirthDate.ToString("yyyy-MM-dd")
                     },
-                    Message = "مبارك للفائز ",
+                    Message = "مبارك للفائز!",
                     IsSuccess = true,
                     StatusCode = 200
                 };
             }
             catch (Exception ex)
             {
-                return new ResponseModel { IsSuccess = false, Message = "حدث خطأ غير متوقع يرجى اعادة المحاولة", StatusCode = 500 };
-
+                return new ResponseModel
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = "حدث خطأ غير متوقع، يرجى إعادة المحاولة لاحقاً"
+                };
             }
-
         }
 
-		public async Task<ResponseModel> UpdateAsync(int id,DrawDTO dto)
+        public async Task<ResponseModel> UpdateAsync(int id, UpdateDrawDTO dto)
         {
             try
             {
                 var draw = await _context.Draws.FindAsync(id);
-                if( draw == null)
+                if (draw == null)
                 {
                     return new ResponseModel
                     {
@@ -218,42 +224,36 @@ namespace StarSarcasm.Infrastructure.Services
                     };
                 }
 
-				string filename = string.Empty;
-				if (dto.file != null)
-				{
-					filename = await _fileUpload.SaveFileAsync(dto.file);
-				}
-				string imagePath = string.IsNullOrEmpty(filename) ? null : _fileUpload.GetFileUrl(filename);
-
-				var newDraw = new Draw
+                if (!string.IsNullOrEmpty(dto.Name))
                 {
-                    Id = draw.Id,
-                    Name = dto.Name,
-                    Description = dto.Description,
-                    StartAt = dto.StartAt,
-                    EndAt = dto.EndAt,
-                    ImagePath = imagePath,
-                };
-
-                _context.Entry(draw).CurrentValues.SetValues(newDraw);
-                var result = _context.Entry(draw);
-                if (result.State == EntityState.Modified)
-                {
-                    await _context.SaveChangesAsync();
-                    return new ResponseModel
-                    {
-                        IsSuccess = true,
-                        StatusCode = 200,
-                        Model = draw,
-						Message = "تم التعديل بنجاح",
-					};
+                    draw.Name = dto.Name;
                 }
+                if (!string.IsNullOrEmpty(dto.Description))
+                {
+                    draw.Description = dto.Description;
+                }
+                if (dto.StartAt.HasValue)
+                {
+                    draw.StartAt = dto.StartAt.Value;
+                }
+                if (dto.EndAt.HasValue)
+                {
+                    draw.EndAt = dto.EndAt.Value;
+                }
+
+                if (dto.file != null)
+                {
+                    draw.ImagePath = await _fileUpload.SaveFileAsync(dto.file);
+                }
+
+                await _context.SaveChangesAsync();
 
                 return new ResponseModel
                 {
-                    IsSuccess = false,
-                    StatusCode = 400,
-                    Message = "حدث خطأ اثناء تعديل السحب",
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Model = draw,
+                    Message = "تم التعديل بنجاح",
                 };
             }
             catch
@@ -267,7 +267,7 @@ namespace StarSarcasm.Infrastructure.Services
             }
         }
 
-		public async Task<ResponseModel> DeleteAsync(int id)
+        public async Task<ResponseModel> DeleteAsync(int id)
         {
             try
             {
@@ -332,7 +332,7 @@ namespace StarSarcasm.Infrastructure.Services
                             Email = user.Email,
                             IsSubscribed = user.IsSubscribed,
                             FcmToken = user.FcmToken,
-                            BirthDate = user.BirthDate.ToString("yyyy/MM/dd"),
+                            BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
                             Longitude = user.Longitude,
                             Latitude = user.Latitude,
                         };
@@ -376,7 +376,7 @@ namespace StarSarcasm.Infrastructure.Services
                     EndAt = d.EndAt,
                     ImagePath = d.ImagePath,
                     SubscribersNumber = d.SubscribersNumber,
-                    IsActive = d.IsActive,
+                    IsActive = d.EndAt > DateTime.UtcNow,
                     User = d.UsersDraws.Where(ud => ud.IsWinner)
                     .Select(ud => new WinnerDTO
                     {
@@ -406,7 +406,7 @@ namespace StarSarcasm.Infrastructure.Services
         public async Task<ResponseModel> GetLastFourDraws()
         {
              var draws = await _context.Draws
-                .Where(d=>d.StartAt<=DateTime.Now)
+               .Where(d=>d.StartAt<=DateTime.Now)
                 .Select(d => new DrawWithWinnerDTO
                 {
                     Id = d.Id,
@@ -416,7 +416,7 @@ namespace StarSarcasm.Infrastructure.Services
                     EndAt = d.EndAt,
                     ImagePath = d.ImagePath,
                     SubscribersNumber = d.SubscribersNumber,
-                    IsActive = d.IsActive,
+                    IsActive = d.EndAt > DateTime.UtcNow,
                     User = d.UsersDraws.Where(ud => ud.IsWinner)
                     .Select(ud => new WinnerDTO
                     {

@@ -105,10 +105,10 @@ namespace StarSarcasm.Infrastructure.Hubs
 
                 chat = new Chat
                 {
-                    Id = $"{model.SenderId}%{model.ReciverId}",
+                    Id = $"{model.SenderId}_{model.ReciverId}",
                     SenderChatName = sender.Name,
                     ReciverChatName = receiver.Name,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     IsDeleted = false,
                 };
 
@@ -142,7 +142,7 @@ namespace StarSarcasm.Infrastructure.Hubs
                 IsDeleted = false,
                 IsModified = false,
                 IsReaded = false,
-                SendAt = DateTime.UtcNow,
+                SendAt =model.SendAt,
                 ChatId = chat.Id,
                 SenderId = model.SenderId,
                 ReciverId = model.ReciverId

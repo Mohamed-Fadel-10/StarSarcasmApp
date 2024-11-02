@@ -21,8 +21,8 @@ namespace StarSarcasm.Infrastructure.Services
         }
         public async Task<ResponseModel> GetMessagesForChat(string chatId)
         {
-            var splitedChat = chatId.Split('%');
-            var reversedChatId = $"{splitedChat[1]}%{splitedChat[0]}";
+            var splitedChat = chatId.Split('_');
+            var reversedChatId = $"{splitedChat[1]}_{splitedChat[0]}";
             Console.WriteLine(chatId);
             Console.WriteLine();
             var messages = await _context.ChatMessages

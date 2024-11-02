@@ -84,7 +84,6 @@ namespace StarSarcasm.Presentation.Controllers
         }
 
         [HttpPost("RefreshToken")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshDTO dto)
         {
             if (ModelState.IsValid)

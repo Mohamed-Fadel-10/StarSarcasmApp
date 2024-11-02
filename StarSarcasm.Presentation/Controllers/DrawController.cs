@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using StarSarcasm.Application;
 using StarSarcasm.Application.DTOs;
 using StarSarcasm.Application.Interfaces;
 using StarSarcasm.Domain.Entities;
@@ -66,8 +67,8 @@ namespace StarSarcasm.Presentation.Controllers
 
 		}
 
-        [HttpPut("updateDraw")]
-        public async Task<IActionResult> Update([FromForm][Required] int darwId, [FromForm] DrawDTO dto)
+        [HttpPatch("updateDraw")]
+        public async Task<IActionResult> Update([FromForm][Required] int darwId, [FromForm] UpdateDrawDTO dto)
         {
             var response=await _awardDrawService.UpdateAsync(darwId, dto);
             if (response.IsSuccess)
