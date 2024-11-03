@@ -24,15 +24,17 @@ namespace StarSarcasm.Infrastructure.Services
         private readonly IUserDrawService _userDrawService;
         private readonly IFileUploadService _fileUpload;
         private readonly FirebaseNotificationService _firebaseNotificationService;
+        private readonly INotificationsService _notificationsService;
 
         public AwardDrawService(Context context, IUserService userService,
-            IUserDrawService userDrawService, IFileUploadService fileUpload, FirebaseNotificationService firebaseNotificationService)
+            IUserDrawService userDrawService, IFileUploadService fileUpload, FirebaseNotificationService firebaseNotificationService, INotificationsService notificationsService)
         {
             _context = context;
             _userService = userService;
             _userDrawService = userDrawService;
             _fileUpload = fileUpload;
             _firebaseNotificationService = firebaseNotificationService;
+            _notificationsService = notificationsService;
         }
 
         public async Task<ResponseModel> GetActiveDrawAsync()
@@ -177,6 +179,14 @@ namespace StarSarcasm.Infrastructure.Services
 
                 if (user.RefreshTokens!.Any(r => r.IsActive))
                 {
+                    var notification = new NotificationDTO()
+                    {
+                        UserId = user.Id,
+                        Content = "تهانينا! لقد فزت معنا في السحب 🎉",
+                        Title = "الجوائز",
+                        SentAt= DateTime.UtcNow,
+                    };
+                    await _notificationsService.SaveNotification(notification);
                     await _firebaseNotificationService.SendNotificationAsync(
                         user.FcmToken,
                         "الجوائز",
@@ -247,7 +257,7 @@ namespace StarSarcasm.Infrastructure.Services
 
                 if (dto.file != null)
                 {
-                    draw.ImagePath = await _fileUpload.SaveFileAsync(dto.file);
+                    draw.ImagePath = await _fileUpload.SaveFileAsync(dto.file, "DrawImages");
                 }
 
                 await _context.SaveChangesAsync();

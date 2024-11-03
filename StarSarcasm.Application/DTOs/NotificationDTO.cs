@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StarSarcasm.Application.DTOs.Message
+namespace StarSarcasm.Application.DTOs
 {
-    public class MessageDTO
+    public class NotificationDTO
     {
-        public int Id { get; set; }
         public string Title { get; set; }
         public string Content { get; set; }
-        public DateTime SandedAt { get; set; }
-        public string ContentType { get; set; }
+
+        public string UserId { get; set; }
+        public DateTime SentAt { get; set; }
+
     }
 }

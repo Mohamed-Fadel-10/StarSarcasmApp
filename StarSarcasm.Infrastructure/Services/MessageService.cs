@@ -66,10 +66,10 @@ namespace StarSarcasm.Infrastructure.Services
                     });
 
                     if (!string.IsNullOrEmpty(user.FcmToken))
-                    {
+                    {                       
                         await _firebaseNotificationService.SendNotificationAsync(
                             user.FcmToken,
-                            "New Message",
+                            "رسالة اليوم 🤩",
                             message.Content
                         );
                     }
@@ -95,28 +95,36 @@ namespace StarSarcasm.Infrastructure.Services
         public async Task<List<MessageDTO>> GetUserMessages(string userId)
         {
             var messages = await _context.UsersMessages
-                .Join(_context.Users,
-                um => um.UserId,
-                u => u.Id,
-                (um, u) => new { UserMessages = um, User = u })
+                .Where(um => um.UserId == userId)
                 .Join(_context.Messages,
-                um => um.UserMessages.MessageId,
-                m => m.Id,
-                (um, m) => new { UserMessages = um, Message = m }).ToListAsync();
+                    um => um.MessageId,
+                    m => m.Id,
+                    (um, m) => new MessageDTO
+                    {
+                        Id = m.Id,
+                        Title = m.Title,
+                        Content = m.Content,
+                        SandedAt = um.SendAt,
+                        ContentType = "Message"
+                    })
+                .ToListAsync();
 
-            var userMessages = messages
-                              .Where(u => u.UserMessages.User.Id == userId)
-                              .Select(m => new MessageDTO
-                              {
-                                  Id = m.Message.Id,
-                                  Title = m.Message.Title,
-                                  Content = m.Message.Content,
-                                  SandedAt=m.UserMessages.UserMessages.SendAt,
-                              })
-                              .ToList();
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .Select(n => new MessageDTO
+                {
+                    Id = n.Id,
+                    Title = n.Title,
+                    Content = n.Content, 
+                    ContentType = "Notification"
+                })
+                .ToListAsync();
 
-            return userMessages.Any() ? userMessages : new List<MessageDTO>();
+            var userContent = messages.Concat(notifications).ToList();
+
+            return userContent;
         }
+
 
         public async Task<ResponseModel> GetMessagesForChat(string chatId)
         {

@@ -106,7 +106,6 @@ namespace StarSarcasm.Infrastructure.Services
                     isSubscribed=user.IsSubscribed,
                     Longitude=user.Longitude,
                     Latitude=user.Latitude,
-                  //  Location=user.Location
                 }
             };
         }
@@ -182,7 +181,6 @@ namespace StarSarcasm.Infrastructure.Services
                 if(user != null)
                 {
                     user.Name = dto.Name ?? user.Name;
-                   // user.Location = dto.Location ?? user.Location;
                     user.Longitude = dto.Longitude ?? user.Longitude;
                     user.Latitude= dto.Latitude ?? user.Latitude;
                     if(DateTime.TryParse(dto.BirthDate, out var birthdate))

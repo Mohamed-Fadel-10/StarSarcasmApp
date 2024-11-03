@@ -130,6 +130,7 @@ builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 builder.Services.AddScoped<IAppMessageService, AppMessageService>();
 builder.Services.AddScoped<IPostservice, PostService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<INotificationsService, NotificationsService>();
 
 
 builder.Services.AddDbContext<Context>(options =>
