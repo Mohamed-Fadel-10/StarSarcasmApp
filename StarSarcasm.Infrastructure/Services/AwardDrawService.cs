@@ -168,17 +168,21 @@ namespace StarSarcasm.Infrastructure.Services
                 winner.IsWinner = true;
                 winner.LastWinDate = DateTime.UtcNow;
                 draw.EndAt = DateTime.UtcNow;
-                var user = await _context.Users.FindAsync(winner.UserId);
+                var user = await _context.Users.Include(u=>u.RefreshTokens)
+                    .FirstOrDefaultAsync(u=>u.Id==winner.UserId);
 
                 _context.UsersDraws.Update(winner);
                 _context.Draws.Update(draw);
                 await _context.SaveChangesAsync();
 
-                await _firebaseNotificationService.SendNotificationAsync(
-                    user.FcmToken,
-                    "الجوائز",
-                    "تهانينا! لقد فزت معنا في السحب 🎉"
-                );
+                if (user.RefreshTokens!.Any(r => r.IsActive))
+                {
+                    await _firebaseNotificationService.SendNotificationAsync(
+                        user.FcmToken,
+                        "الجوائز",
+                        "تهانينا! لقد فزت معنا في السحب 🎉"
+                    );
+                }
 
                 return new ResponseModel
                 {
