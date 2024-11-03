@@ -40,7 +40,7 @@ namespace StarSarcasm.Infrastructure.Services
             body += "<h5>Please use the following OTP to verify your email address: </h5>";
             body += "<h1>" + otp + "</h1>";
             body += "<br><h5>Have a nice day,</h5>";
-            body += "<h6>Star Sarcasm Support Team.</h6>";
+            body += "<h6>Hazzy Support Team.</h6>";
             body += "</div>";
             return body;
         }
