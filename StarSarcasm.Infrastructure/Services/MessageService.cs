@@ -43,12 +43,19 @@ namespace StarSarcasm.Infrastructure.Services
 
         private async Task<ResponseModel> SendMessagesToUsers(List<Message> messages, bool IsSubscribed)
         {
-            var users = await _context.Users
+            var users = await _context.Users.Include(u=>u.RefreshTokens)
                 .Where(u => u.IsSubscribed == IsSubscribed)
                 .ToListAsync();
 
             foreach (var user in users)
             {
+                var isLoggedIn = user.RefreshTokens!.Any(r => r.IsActive);
+				if (!isLoggedIn)
+                {
+                    //not create or send message if he is not logged in
+                    continue;
+                }
+
                 foreach (var message in messages)
                 {
                     await _context.UsersMessages.AddAsync(new UsersMessages

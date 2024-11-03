@@ -139,6 +139,12 @@ namespace StarSarcasm.Infrastructure.Services
                 {
                     foreach (var user in zodiacUsers)
                     {
+                        if(await _userManager.IsInRoleAsync(user, "Admin"))
+                        {
+                            // not return admin in users
+                            continue;
+                        }
+
                         if (user.BirthDate.Day == zodiacNum)
                         {
                             var isLoggedIn = user.RefreshTokens.Any(r => r.IsActive);
