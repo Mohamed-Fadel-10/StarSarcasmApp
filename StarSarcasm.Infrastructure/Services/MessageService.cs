@@ -69,7 +69,7 @@ namespace StarSarcasm.Infrastructure.Services
                     {                       
                         await _firebaseNotificationService.SendNotificationAsync(
                             user.FcmToken,
-                            "رسالة اليوم 🤩",
+                            "حظك اليوم 🤩",
                             message.Content
                         );
                     }
@@ -120,7 +120,7 @@ namespace StarSarcasm.Infrastructure.Services
                 })
                 .ToListAsync();
 
-            var userContent = messages.Concat(notifications).ToList();
+            var userContent = messages.Concat(notifications).OrderBy(m=>m.SandedAt).ToList();
 
             return userContent;
         }

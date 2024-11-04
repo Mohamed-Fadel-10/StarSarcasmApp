@@ -184,7 +184,7 @@ namespace StarSarcasm.Infrastructure.Services
                         UserId = user.Id,
                         Content = "تهانينا! لقد فزت معنا في السحب 🎉",
                         Title = "الجوائز",
-                        SentAt= DateTime.UtcNow,
+                        SentAt= DateTime.Now,
                     };
                     await _notificationsService.SaveNotification(notification);
                     await _firebaseNotificationService.SendNotificationAsync(

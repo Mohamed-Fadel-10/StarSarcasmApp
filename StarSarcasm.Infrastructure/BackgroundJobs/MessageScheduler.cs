@@ -27,26 +27,19 @@ namespace StarSarcasm.Infrastructure.BackgroundJobs
         public void ScheduleMessagesForSubscribedUsers()
         {
             RecurringJob.AddOrUpdate("SendMessagesToSubscribed",
-                () => _messageService.SendMessagesToUnSubscribedUsers(),
+                () => _messageService.SendMessagesToSubscribedUsers(),
                 "0 8,12,16,20,23 * * *");
         }
 
 
-        // This For Test Hangfire in a few Minutes
+        // Test Method
         //public void ScheduleMessagesForSubscribedUsersTest()
         //{
         //    RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
-        //        () => _messageService.SendMessagesToUnSubscribedUsers(),
-        //        "0 * * * *"); 
+        //        () => _messageService.SendMessagesToSubscribedUsers(),
+        //        "*/2 * * * *");
         //}
 
-
-        //public void ScheduleMessagesForSubscribedUsersTest()
-        //{
-        //    RecurringJob.AddOrUpdate("SendMessagesToSubscribedUsersTest",
-        //        () => _messageService.SendMessagesToUnSubscribedUsers(),
-        //        "* * * * *");
-        //}
 
 
 
